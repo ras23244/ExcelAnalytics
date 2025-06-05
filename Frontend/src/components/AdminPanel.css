@@ -1,0 +1,238 @@
+.admin-panel {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.admin-header {
+  margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+  font-size: 2rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.admin-header p {
+  color: var(--text-secondary);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-icon {
+  font-size: 2rem;
+  color: var(--primary-color);
+}
+
+.stat-info h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--text-primary);
+  margin: 0.25rem 0;
+}
+
+.stat-change {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.stat-change.positive {
+  color: var(--success-color);
+}
+
+.admin-content {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.table-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.add-user-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-user-btn:hover {
+  background: var(--secondary-color);
+}
+
+.user-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.user-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: #f8fafc;
+}
+
+.user-details {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-details h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.user-details p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.user-files {
+  padding: 1.5rem;
+}
+
+.user-files h4 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+}
+
+.files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.file-icon {
+  color: #4361ee;
+  font-size: 1.25rem;
+}
+
+.file-info {
+  flex: 1;
+}
+
+.file-info p {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.file-info span {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.delete-file-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: rgba(244, 67, 54, 0.1);
+  color: var(--error-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-file-btn:hover {
+  background: rgba(244, 67, 54, 0.2);
+}
+
+.role-badge, .status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.role-badge.premium {
+  background: rgba(67, 97, 238, 0.1);
+  color: var(--primary-color);
+}
+
+.role-badge.basic {
+  background: rgba(113, 128, 150, 0.1);
+  color: var(--text-secondary);
+}
+
+.status-badge.active {
+  background: rgba(76, 175, 80, 0.1);
+  color: var(--success-color);
+}
+
+.edit-btn, .delete-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.edit-btn {
+  background: rgba(67, 97, 238, 0.1);
+  color: var(--primary-color);
+}
+
+.delete-btn {
+  background: rgba(244, 67, 54, 0.1);
+  color: var(--error-color);
+}
+
+.edit-btn:hover, .delete-btn:hover {
+  transform: translateY(-2px);
+}

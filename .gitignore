@@ -1,0 +1,25 @@
+node_modules/
+# Node modules
+Backend/node_modules/
+Frontend/node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment variables
+Backend/.env
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+
+# Optional IDE-specific files
+.vscode/
+.bolt/
+
+# Cache
+*.cache
+.cache/
+
