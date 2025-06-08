@@ -1,0 +1,98 @@
+/* Signup Page Styles - Consistent with App Theme */
+.signup-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-secondary, #f7fafc);
+}
+
+.signup-form {
+  background: var(--bg-primary, #fff);
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(67, 97, 238, 0.08);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.signup-title {
+  text-align: center;
+  color: var(--primary-color, #4361ee);
+  margin-bottom: 0.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  color: var(--text-secondary, #718096);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #f9f9f9;
+  color: var(--text-primary, #2d3748);
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-color, #4361ee);
+  background: #fff;
+}
+
+.signup-btn {
+  background: var(--primary-color, #4361ee);
+  color: #fff;
+  border: none;
+  padding: 0.85rem 0;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.2s, transform 0.2s;
+}
+.signup-btn:hover:not(:disabled) {
+  background: var(--secondary-color, #3f37c9);
+  transform: translateY(-2px);
+}
+.signup-btn:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.signup-error {
+  background: rgba(244, 67, 54, 0.08);
+  color: var(--error-color, #f44336);
+  border-left: 4px solid var(--error-color, #f44336);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  font-size: 0.98rem;
+}
+.signup-success {
+  background: rgba(76, 175, 80, 0.08);
+  color: var(--success-color, #4caf50);
+  border-left: 4px solid var(--success-color, #4caf50);
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  font-size: 0.98rem;
+}

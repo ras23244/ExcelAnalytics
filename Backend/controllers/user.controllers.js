@@ -1,71 +1,172 @@
-const userModel = require('../models/user.model');
-const { validationResult } = require('express-validator');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const userModel = require("../models/user.model");
+const { validationResult } = require("express-validator");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const excelDataModel = require("../models/excelData.model");
 
-module.exports.register = async (req, res,next) => {
-    const errors = validationResult(req);
-    if(!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+module.exports.register = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const { name, email, password } = req.body;
+  try {
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
     }
-    const { name, email, password } = req.body;
-    try {
-        const existingUser = await userModel.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-        const hashedPassword = await userModel.hashPassword(password);
-        const newUser = new userModel({
-            name,
-            role: req.body.role || 'user', // Default role to 'user' if not provided
-            email,
-            password: hashedPassword
-        });
+    const hashedPassword = await userModel.hashPassword(password);
+    const newUser = new userModel({
+      name,
+      role: req.body.role || "user", // Default role to 'user' if not provided
+      email,
+      password: hashedPassword,
+    });
 
-       
-        await newUser.save();
-        const token = newUser.generateAuthToken();
+    await newUser.save();
+    const token = newUser.generateAuthToken();
 
-        res.status(201).json({token, newUser});
+    res.status(201).json({ token, newUser });
+  } catch (error) {
+    console.error("Error during registration:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.login = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  const { email, password } = req.body;
+  try {
+    const user = await userModel.findOne({ email }).select("+password");
+    if (!user) {
+      return res.status(400).json({ message: "Invalid email or password" });
     }
-    catch (error) {
-        console.error('Error during registration:', error);
-        res.status(500).json({ message: 'Internal server error' });
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
     }
+
+    const token = user.generateAuthToken();
+    res.cookie("token", token);
+    res.status(200).json({ token, user });
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+module.exports.getProfile = async (req, res, next) => {
+  try {
+    const user = await userModel.findById(req.user._id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 }
 
-module.exports.login = async (req, res,next) => {
-    const errors = validationResult(req);
-    if(!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    const { email, password } = req.body;
-    try {
-        const user = await userModel.findOne({ email }).select('+password');
+module.exports.getAdminProfile = async (req, res, next) => {
+    try{
+        const user = await userModel.findById(req.user._id).select("-password");
         if (!user) {
-            return res.status(400).json({ message: 'Invalid email or password' });
+            return res.status(404).json({ message: "User not found" });
         }
-
-        const isMatch = await user.comparePassword(password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid email or password' });
+        if (user.role !== "admin") {
+            return res.status(403).json({ message: "Access denied" });
         }
-
-        const token = user.generateAuthToken();
-        res.cookie('token',token);
-        res.status(200).json({ token, user });
-    }
-    catch (error) {
-        console.error('Error during login:', error);
-        res.status(500).json({ message: 'Internal server error' });
-    }
+        res.status(200).json(user);
+    } catch(error){
+        console.error("Error fetching user profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 }
+
 module.exports.logout = async (req, res, next) => {
+  try {
+    res.clearCookie("token");
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (error) {
+    console.error("Error during logout:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.getAllUsers = async (req, res, next) => {
+  try {
+    const users = await userModel.find({ role: "user" });
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.getMyUploads = async (req, res, next) => {
+  try {
+    const uploads = excelDataModel
+      .find({ uploadedBy: req.user._id })
+      .select("fileName uploadedAt") // limit fields
+      .sort({ uploadedAt: -1 });
+
+    res.status(200).json(uploads);
+  } catch (error) {
+    console.error("Error fetching uploads:", error);
+    res.status(500).json({ error: "Server error fetching uploaded files" });
+  }
+};
+
+module.exports.deleteUser = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const user = await userModel.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//this can be wrong ..must check it.
+module.exports.deleteFile = async (req, res, next) => {
+  try {
+    const fileId = req.params.id;
+    const fileRecord = await excelDataModel.findByIdAndDelete(fileId);
+    if (!fileRecord) {
+      return res.status(404).json({ message: "File not found" });
+    }
+    // If you store the file on disk, delete it here (optional):
+    // const filePath = path.join(__dirname, '..', 'uploads', fileRecord.fileName);
+    // if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    res.status(200).json({ message: "File deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+module.exports.getAllFiles = async (req, res, next) => {
     try {
-        res.clearCookie('token'); 
-        res.status(200).json({ message: 'Logged out successfully' });
+        // Fetch all uploaded files with uploader's name and email
+        const uploads = await excelDataModel
+            .find()
+            .populate('uploadedBy', 'name') // Populate uploadedBy with name and email
+            .select('fileName uploadedAt uploadedBy')
+            .sort({ uploadedAt: -1 });
+
+        res.status(200).json(uploads);
     } catch (error) {
-        console.error('Error during logout:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error("Error fetching all files:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };

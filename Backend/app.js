@@ -6,11 +6,16 @@ const cookieParser = require('cookie-parser');
 dotenv.config();
 const connectToDb = require('./db/db');
 const userRoutes = require('./routes/user.routes');
-
+const excelDataRoutes = require('./routes/excelData.routes');
+const chartRecordRoutes = require('./routes/chartRecord.routes');
 connectToDb();
 
 app.use(cookieParser());
-app.use(cors());
+// Fix CORS to allow credentials and set allowed origin
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -19,6 +24,8 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-app.use('/users',userRoutes);
+app.use('/user',userRoutes);
+app.use('/data', excelDataRoutes);
+app.use('/charts', chartRecordRoutes);
 
 module.exports= app;

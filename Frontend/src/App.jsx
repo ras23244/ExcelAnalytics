@@ -7,25 +7,79 @@ import DataAnalysis from './components/DataAnalysis';
 import ChartGenerator from './components/ChartGenerator';
 import AnalysisHistory from './components/AnalysisHistory';
 import AdminPanel from './components/AdminPanel';
+import Signout from './components/Signout';
+import Signup from './components/Signup';
+import Login from './components/Login';
 import './App.css';
+import UserContext from './context/userContext';
+import UserProtectWrapper from './pages/UserProtectWrapper';
+import AdminProtectWrapper from './pages/AdminProtectWrapper';
 
 function App() {
   return (
-    <Router>
-      <div className="app-container">
-        <Sidebar />
-        <div className="main-content">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/upload" element={<UploadExcel />} />
-            <Route path="/analysis" element={<DataAnalysis />} />
-            <Route path="/chart-generator" element={<ChartGenerator />} />
-            <Route path="/history" element={<AnalysisHistory />} />
-            <Route path="/admin" element={<AdminPanel />} />
-          </Routes>
+    <UserContext>AdminProtectWrapper
+      <Router>
+        <div className="app-container">
+          <Sidebar />
+          <div className="main-content">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route
+                path="/upload"
+                element={
+                  <UserProtectWrapper>
+                    <UploadExcel />
+                  </UserProtectWrapper>
+                }
+              />
+              <Route
+                path="/analysis"
+                element={
+                  <UserProtectWrapper>
+                    <DataAnalysis />
+                  </UserProtectWrapper>
+                }
+              />
+              <Route
+                path="/chart-generator"
+                element={
+                  <UserProtectWrapper>
+                    <ChartGenerator />
+                  </UserProtectWrapper>
+                }
+              />
+              <Route
+                path="/history"
+                element={
+                  <UserProtectWrapper>
+                    <AnalysisHistory />
+                  </UserProtectWrapper>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <AdminProtectWrapper>
+                    <AdminPanel />
+                  </AdminProtectWrapper>
+                }
+              />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Signup />} />
+               <Route
+                path="/signout"
+                element={
+                  <UserProtectWrapper>
+                    <Signout />
+                  </UserProtectWrapper>
+                }
+              />
+
+            </Routes>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </UserContext>
   );
 }
 
