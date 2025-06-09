@@ -11,9 +11,18 @@ function ChartGenerator() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const recordId = searchParams.get('recordId');
+  const chartTypeParam = searchParams.get('chartType');
+  const xParam = searchParams.get('x');
+  const yParam = searchParams.get('y');
+  const zParam = searchParams.get('z');
+  const chartTitleParam = searchParams.get('chartTitle');
 
-  const [chartType, setChartType] = useState('bar');
-  const [selectedColumns, setSelectedColumns] = useState({ x: '', y: '', z: '' });
+  const [chartType, setChartType] = useState(chartTypeParam || 'bar');
+  const [selectedColumns, setSelectedColumns] = useState({
+    x: xParam || '',
+    y: yParam || '',
+    z: zParam || ''
+  });
   const [showMoreCharts, setShowMoreCharts] = useState(false);
   const [is3D, setIs3D] = useState(false);
   const [excelData, setExcelData] = useState(null);
@@ -22,6 +31,8 @@ function ChartGenerator() {
   const [error, setError] = useState('');
   const [columnTypes, setColumnTypes] = useState({});
   const [axisSuggestions, setAxisSuggestions] = useState({ x: [], y: [], z: [] });
+  const [chartSaved, setChartSaved] = useState(false);
+  const [savingChart, setSavingChart] = useState(false);
 
   useEffect(() => {
     if (!recordId) return;
@@ -462,12 +473,57 @@ function ChartGenerator() {
     setSelectedColumns({ x: '', y: '', z: '' }); 
   };
 
+  const handleSaveChart = async () => {
+    if (!recordId || !chartType) return;
+    setSavingChart(true);
+    setChartSaved(false);
+    try {
+      const token = localStorage.getItem('token');
+      // Prepare payload: include only axes that are relevant for the chart type
+      const config = chartTypeConfig[chartType];
+      const payload = {
+        excelRecordId: recordId,
+        xAxis: selectedColumns.x || '',
+        yAxis: selectedColumns.y || '',
+        zAxis: selectedColumns.z || '',
+        chartType,
+        chartTitle: chartTypeConfig[chartType].label,
+      };
+      Object.keys(config).forEach(axis => {
+        if (Array.isArray(config[axis]) && selectedColumns[axis]) {
+          payload[axis + 'Axis'] = selectedColumns[axis];
+        }
+      });
+      await axios.post(`${VITE_BASE_URL}/chart/create`, payload, {
+        headers: { Authorization: token ? `Bearer ${token}` : undefined },
+        withCredentials: true
+      });
+      setChartSaved(true);
+    } catch (err) {
+      setChartSaved(false);
+      alert('Failed to save chart.');
+    }
+    setSavingChart(false);
+  };
+
   // In the axis selection UI, only show compatible fields for each axis
   const getCompatibleFields = (axis) => {
     const config = chartTypeConfig[chartType];
     if (!config || !config[axis]) return columns;
     return columns.filter(col => config[axis].includes(columnTypes[col]));
   };
+
+  useEffect(() => {
+    // If query params change (e.g. user navigates from preview), update state
+    if (chartTypeParam && chartType !== chartTypeParam) setChartType(chartTypeParam);
+    setSelectedColumns({
+      x: xParam || '',
+      y: yParam || '',
+      z: zParam || ''
+    });
+    // Optionally, set chart title if you use it in the UI
+    // setChartTitle(chartTitleParam || '');
+  }, [chartTypeParam, xParam, yParam, zParam]);
 
   return (
     <div className="chart-generator">
@@ -568,18 +624,28 @@ function ChartGenerator() {
       </div>
       <div className="chart-display">
         {plotData ? (
-          <Plot
-            data={plotData}
-            layout={{
-              width: 800,
-              height: 500,
-              title: 'Generated Chart',
-              paper_bgcolor: 'rgba(0,0,0,0)',
-              plot_bgcolor: 'rgba(0,0,0,0)',
-              font: { color: '#2d3748' }
-            }}
-            config={{ responsive: true }}
-          />
+          <>
+            <Plot
+              data={plotData}
+              layout={{
+                width: 800,
+                height: 500,
+                title: 'Generated Chart',
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                font: { color: '#2d3748' }
+              }}
+              config={{ responsive: true }}
+            />
+            <button
+              className="save-chart-btn"
+              onClick={handleSaveChart}
+              disabled={savingChart || chartSaved}
+              style={{ marginTop: 16 }}
+            >
+              {savingChart ? 'Saving...' : chartSaved ? 'Chart Saved!' : 'Save Chart'}
+            </button>
+          </>
         ) : (
           <div className="empty-chart">
             <FaChartBar className="empty-icon" />

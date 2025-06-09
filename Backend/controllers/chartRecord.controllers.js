@@ -36,9 +36,11 @@ module.exports.createChartRecord = async (req, res) => {
 }
 module.exports.getChartRecords = async (req, res) => {
     try {
-        const chartRecords = await chartRecordModel.find({ user: req.user.id })
+        const chartRecords = await chartRecordModel.find({ user: req.user._id })
             .populate('excelRecordId', 'fileName uploadedAt')
             .sort({ createdAt: -1 });
+
+        console.log("Fetched chart records:", chartRecords);
         
         res.status(200).json(chartRecords);
     } catch (err) {
@@ -60,6 +62,21 @@ module.exports.getChartRecordById = async (req, res) => {
     } catch (err) {
         console.error("Error fetching chart record:", err);
         res.status(500).json({ error: "Server error while fetching chart record" });
+    }
+}
+
+module.exports.deleteChartRecord = async (req, res) => {
+    try {
+        const chartRecord = await chartRecordModel.findByIdAndDelete(req.params.id);
+        
+        if (!chartRecord) {
+            return res.status(404).json({ message: "Chart record not found" });
+        }
+        
+        res.status(200).json({ message: "Chart record deleted successfully" });
+    } catch (err) {
+        console.error("Error deleting chart record:", err);
+        res.status(500).json({ error: "Server error while deleting chart record" });
     }
 }
 

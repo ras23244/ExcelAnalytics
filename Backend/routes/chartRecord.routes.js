@@ -21,13 +21,20 @@ router.post(
 
 // Route to get all chart records for the authenticated user
 router.get(
-  '/history',
+  '/my-charts',
   authMiddleware.authUser,
   chartRecordController.getChartRecords
 );
 
 // Route to get a specific chart record by ID
 router.get('/:id',authMiddleware.authUser,chartRecordController.getChartRecordById);
+
+// Route to delete a specific chart record by ID
+router.delete(
+  '/delete/:id',
+  authMiddleware.authUser,
+  chartRecordController.deleteChartRecord
+);
 
 // Route to download a specific chart record by ID
 // router.get('/download/:id',authMiddleware.authUser,chartRecordController.downloadChart);

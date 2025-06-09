@@ -16,13 +16,17 @@ import AdminProtectWrapper from './pages/AdminProtectWrapper';
 
 function App() {
   return (
-    <UserContext>AdminProtectWrapper
+    <UserContext>
       <Router>
         <div className="app-container">
           <Sidebar />
           <div className="main-content">
             <Routes>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={
+                 <UserProtectWrapper>
+                <Dashboard />
+                </UserProtectWrapper>
+                } />
               <Route
                 path="/upload"
                 element={

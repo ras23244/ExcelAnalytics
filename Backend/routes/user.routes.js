@@ -31,9 +31,12 @@ router.get('/admin-profile', authMiddleware.authUser, authMiddleware.authAdmin, 
 router.post('/logout', authMiddleware.authUser, userController.logout);
  
 
-//
+// get the uploaded file
 router.get('/my-uploads',authMiddleware.authUser,userController.getMyUploads)
 
+
+// delete the uploaded file
+router.delete('/delete-upload/:id', authMiddleware.authUser, userController.deleteUpload);
 // Routes for admin
 
 // List all users for admin
@@ -49,8 +52,17 @@ router.delete('/admin/:id',authMiddleware.authUser,authMiddleware.authAdmin,user
 
 
 // list all uploaded files check this once 
-router.get('admin/allfiles',authMiddleware.authUser, authMiddleware.authAdmin,userController.getAllFiles)
+router.get('/admin/allfiles',authMiddleware.authUser, authMiddleware.authAdmin,userController.getAllFiles)
 
 // delete a particular file
 router.delete('/admin/files/:id', authMiddleware.authUser, authMiddleware.authAdmin, userController.deleteFile);
+
+// Get all users with their  uploaded files (for admin panel)
+router.get(
+    '/admin/users-with-files',
+    authMiddleware.authUser,
+    authMiddleware.authAdmin,
+    userController.getUsersWithFiles
+);
+
 module.exports = router;

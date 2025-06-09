@@ -98,12 +98,20 @@
 }
 
 .dashboard-content {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
+  display: block;
 }
 
-.recent-analyses, .quick-actions {
+.recent-analyses {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.quick-actions {
   background: white;
   padding: 1.5rem;
   border-radius: 12px;

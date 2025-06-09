@@ -1,8 +1,8 @@
 const userModel = require("../models/user.model");
 const { validationResult } = require("express-validator");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const excelDataModel = require("../models/excelData.model");
+const path= require("path");
+const fs = require("fs");
 
 module.exports.register = async (req, res, next) => {
   const errors = validationResult(req);
@@ -102,6 +102,7 @@ module.exports.logout = async (req, res, next) => {
 module.exports.getAllUsers = async (req, res, next) => {
   try {
     const users = await userModel.find({ role: "user" });
+   
     res.status(200).json(users);
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -111,17 +112,33 @@ module.exports.getAllUsers = async (req, res, next) => {
 
 module.exports.getMyUploads = async (req, res, next) => {
   try {
-    const uploads = excelDataModel
+    const uploads = await excelDataModel
       .find({ uploadedBy: req.user._id })
       .select("fileName uploadedAt") // limit fields
       .sort({ uploadedAt: -1 });
-
     res.status(200).json(uploads);
   } catch (error) {
     console.error("Error fetching uploads:", error);
     res.status(500).json({ error: "Server error fetching uploaded files" });
   }
 };
+
+module.exports.deleteUpload = async (req, res, next) => {
+  try {
+    const uploadId = req.params.id;
+    const upload = await excelDataModel.findByIdAndDelete(uploadId);
+    if (!upload) {
+      return res.status(404).json({ message: "Upload not found" });
+    }
+    // If you store the file on disk, delete it here (optional):
+    const filePath = path.join(__dirname, '..', 'uploads', upload.fileName);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    res.status(200).json({ message: "Upload deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting upload:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
 
 module.exports.deleteUser = async (req, res, next) => {
   try {
@@ -169,4 +186,30 @@ module.exports.getAllFiles = async (req, res, next) => {
         console.error("Error fetching all files:", error);
         res.status(500).json({ message: "Internal server error" });
     }
+};
+
+// Get all users with their uploaded files (for admin panel)
+module.exports.getUsersWithFiles = async (req, res, next) => {
+  try {
+    // Fetch all users (excluding password)
+    const users = await userModel.find({}, '-password').lean();
+    // Fetch all files
+    const files = await excelDataModel.find({}, 'fileName uploadedAt uploadedBy').lean();
+    // Group files by user
+    const filesByUser = {};
+    files.forEach(file => {
+      const userId = file.uploadedBy.toString();
+      if (!filesByUser[userId]) filesByUser[userId] = [];
+      filesByUser[userId].push(file);
+    });
+    // Attach files to each user
+    const usersWithFiles = users.map(user => ({
+      ...user,
+      files: filesByUser[user._id.toString()] || []
+    }));
+    res.status(200).json(usersWithFiles);
+  } catch (error) {
+    console.error('Error fetching users with files:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 };

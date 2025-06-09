@@ -6,6 +6,7 @@ const ChartRecordSchema = new mongoose.Schema({
   chartType: String,
   xAxis: String,
   yAxis: String,
+  zAxis: String, // Optional for 3D charts
   chartTitle: String,
   createdAt: { type: Date, default: Date.now }
 });
