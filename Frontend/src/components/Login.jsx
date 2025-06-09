@@ -1,4 +1,4 @@
-import React, { useState,useContext } from 'react';
+import React, { useState,useContext,Link } from 'react';
 import axios from 'axios';
 import './Signup.css';
 import { useNavigate } from 'react-router-dom';
@@ -92,6 +92,10 @@ function Login() {
         </div>
         <button className="signup-btn" type="submit" disabled={loading}>
           {loading ? ' Logging...' : ' Login'}
+        </button>
+        <div>Don't have account?</div>
+        <button className="signup-btn" type="button" onClick={() => navigate('/register')}>
+          Sign Up
         </button>
       </form>
     </div>

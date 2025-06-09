@@ -1,17 +1,29 @@
 import React, { useState } from 'react';
 import { FaFileUpload, FaFile } from 'react-icons/fa';
+import axios from 'axios';
 import './UploadExcel.css';
+import { useNavigate } from 'react-router-dom';
+
+const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 function UploadExcel() {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploaded, setUploaded] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [previewData, setPreviewData] = useState(null);
+  const [recordId, setRecordId] = useState(null);
+
+  const token = localStorage.getItem('token');
+  const navigate = useNavigate();
 
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
+    if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
-    } else if (e.type === "dragleave") {
+    } else if (e.type === 'dragleave') {
       setDragActive(false);
     }
   };
@@ -20,7 +32,6 @@ function UploadExcel() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
     const files = e.dataTransfer.files;
     if (files && files[0]) {
       handleFile(files[0]);
@@ -35,12 +46,50 @@ function UploadExcel() {
   };
 
   const handleFile = (file) => {
-    if (file.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || 
-        file.type === "application/vnd.ms-excel") {
+    if (
+      file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      file.type === 'application/vnd.ms-excel'
+    ) {
       setSelectedFile(file);
+      console.log('Selected file:', file);
     } else {
-      alert("Please upload only Excel files (.xlsx or .xls)");
+      alert('Please upload only Excel files (.xlsx or .xls)');
     }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) return;
+    setUploading(true);
+    setUploadError('');
+    setPreviewData(null);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const res = await axios.post(`${VITE_BASE_URL}/data/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+
+      if (res.status === 201 && res.data && res.data.recordId) {
+        setUploaded(true);
+        setRecordId(res.data.recordId);
+        if (res.data.data && Array.isArray(res.data.data)) {
+          setPreviewData(res.data.data.slice(0, 5));
+        } else if (res.data.rowCount && res.data.rowCount > 0) {
+          setPreviewData([{ info: `File uploaded. ${res.data.rowCount} rows saved.` }]);
+        } else {
+          setPreviewData([{ info: 'File uploaded successfully.' }]);
+        }
+      } else {
+        setUploadError('Upload failed.');
+      }
+    } catch (err) {
+      setUploadError(err.response?.data?.message || 'Upload failed.');
+    }
+    setUploading(false);
   };
 
   return (
@@ -50,7 +99,7 @@ function UploadExcel() {
         Upload your Excel file (.xlsx or .xls) to start analyzing your data
       </p>
 
-      <div 
+      <div
         className={`upload-area ${dragActive ? 'drag-active' : ''}`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -64,7 +113,7 @@ function UploadExcel() {
           accept=".xlsx,.xls"
           onChange={handleFileInput}
         />
-        
+
         <div className="upload-content">
           <FaFileUpload className="upload-icon" />
           <p>Drag and drop your Excel file here</p>
@@ -82,9 +131,68 @@ function UploadExcel() {
             <p className="file-name">{selectedFile.name}</p>
             <p className="file-size">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
           </div>
-          <button className="analyze-button">
-            Analyze Data
+
+          <button
+            className={`analyze-button ${uploaded ? 'uploaded' : ''}`}
+            type="button"
+            onClick={handleUpload}
+            disabled={uploading || uploaded}
+          >
+            {uploading ? 'Uploading...' : uploaded ? 'Uploaded' : 'Upload File'}
           </button>
+
+          {uploaded && (
+            <button
+              className="generate-chart-button"
+              type="button"
+              onClick={() =>navigate(`/chart-generator?recordId=${recordId}`)}
+              style={{
+                marginTop: '1rem',
+                background: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                padding: '10px 16px',
+                borderRadius: 4,
+                cursor: 'pointer'
+              }}
+            >
+              Generate Chart
+            </button>
+          )}
+        </div>
+      )}
+
+      {uploadError && <div style={{ color: 'red', marginTop: '1rem' }}>{uploadError}</div>}
+
+      {previewData && (
+        <div style={{ marginTop: '1.5rem', background: '#fff', borderRadius: 8, padding: 16 }}>
+          <h4>Preview</h4>
+          {Array.isArray(previewData) && previewData.length > 0 ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  {Object.keys(previewData[0]).map((key) => (
+                    <th key={key} style={{ borderBottom: '1px solid #eee', padding: 4, textAlign: 'left' }}>
+                      {key}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {previewData.map((row, idx) => (
+                  <tr key={idx}>
+                    {Object.values(row).map((val, i) => (
+                      <td key={i} style={{ borderBottom: '1px solid #f5f5f5', padding: 4 }}>
+                        {String(val)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div>{previewData[0]?.info}</div>
+          )}
         </div>
       )}
     </div>

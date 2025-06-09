@@ -1,27 +1,31 @@
 const express = require("express");
 const router = express.Router();
-const { body } = require("express-validator");
-const authMiddleware = require("../middlewares/auth.middleware");
-const excelDataController = require("../controllers/excelData.controllers");
-const multer = require("multer");
-const fs = require("fs");
 const path = require("path");
-const xlsx = require("xlsx");
+const multer = require("multer");
+const excelDataController = require("../controllers/excelData.controllers");
+const authMiddleware = require("../middlewares/auth.middleware");
 
-const storage = multer.memoryStorage();
+// Disk storage setup
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "..", "uploads")); // uploads folder
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
+  },
+});
+
 const upload = multer({ storage: storage });
 
-// Route to upload Excel data
-router.post("/upload",authMiddleware.authUser,excelDataController.uploadExcelData);
+// Route to upload Excel file
+router.post(
+  "/upload",
+  authMiddleware.authUser,
+  upload.single("file"), // file field name in formData
+  excelDataController.uploadExcelData
+);
 
-// Route to analyze Excel data
-// router.post(
-//   "/analyze",
-//   authMiddleware.authUser,
-//   [
-//   body("recordId").notEmpty().withMessage("Record ID is required"),
-//   body("analysisType").notEmpty().withMessage("Analysis type is required"),
-//   ],excelDataController.analyzeExcelData
-// );
+router.get("/:id", authMiddleware.authUser, excelDataController.getExcelDataById);
 
 module.exports = router;

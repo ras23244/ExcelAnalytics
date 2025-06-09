@@ -1,22 +1,82 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Plot from 'react-plotly.js';
 import { FaChartBar, FaChartLine, FaChartPie, FaChartArea, FaChevronDown } from 'react-icons/fa';
 import './ChartGenerator.css';
+import axios from 'axios';
+
+const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 function ChartGenerator() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const recordId = searchParams.get('recordId');
+
   const [chartType, setChartType] = useState('bar');
   const [selectedColumns, setSelectedColumns] = useState({ x: '', y: '', z: '' });
   const [showMoreCharts, setShowMoreCharts] = useState(false);
   const [is3D, setIs3D] = useState(false);
+  const [excelData, setExcelData] = useState(null);
+  const [columns, setColumns] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [columnTypes, setColumnTypes] = useState({});
+  const [axisSuggestions, setAxisSuggestions] = useState({ x: [], y: [], z: [] });
 
-  const dummyData = {
-    columns: ['Sales', 'Revenue', 'Profit', 'Month', 'Region'],
-    data: [
-      { Sales: 100, Revenue: 150, Profit: 50, Month: 'Jan', Region: 'North' },
-      { Sales: 120, Revenue: 180, Profit: 60, Month: 'Feb', Region: 'South' },
-      { Sales: 90, Revenue: 130, Profit: 40, Month: 'Mar', Region: 'East' },
-    ]
-  };
+  useEffect(() => {
+    if (!recordId) return;
+    setLoading(true);
+    setError('');
+    const token = localStorage.getItem('token'); 
+    axios.get(`${VITE_BASE_URL}/data/${recordId}`, {
+      withCredentials: true,
+      headers: {
+        Authorization: token ? `Bearer ${token}` : undefined,
+      },
+    })
+      .then(res => {
+        if (res.status === 200 && res.data && Array.isArray(res.data.data)) {
+          setExcelData(res.data.data);
+          setColumns(Object.keys(res.data.data[0] || {}));
+        } else {
+          setError('No data found for this record.');
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.response?.data?.message || 'Failed to fetch data.');
+        setLoading(false);
+      });
+  }, [recordId]);
+
+  useEffect(() => {
+    if (!excelData || columns.length === 0) return;
+    // Infer column types: numeric or categorical
+    const types = {};
+    columns.forEach(col => {
+      const values = excelData.map(row => row[col]);
+      const numericCount = values.filter(v => !isNaN(parseFloat(v)) && v !== null && v !== '').length;
+      types[col] = numericCount > values.length * 0.7 ? 'numeric' : 'categorical';
+    });
+    setColumnTypes(types);
+  }, [excelData, columns]);
+
+  // Suggestion logic
+  useEffect(() => {
+    if (!columns.length) return;
+    const used = Object.values(selectedColumns).filter(Boolean);
+    const available = columns.filter(col => !used.includes(col));
+    const suggestions = {};
+    const config = chartTypeConfig[chartType];
+    if (!config) return;
+    Object.keys(config).forEach(axis => {
+      if (Array.isArray(config[axis])) {
+        // Suggest the first compatible available field for each axis
+        suggestions[axis] = available.filter(col => config[axis].includes(columnTypes[col]));
+      }
+    });
+    setAxisSuggestions(suggestions);
+  }, [selectedColumns, chartType, columns, columnTypes]);
 
   const basicChartTypes = [
     { id: 'bar', icon: FaChartBar, label: 'Bar Chart' },
@@ -26,26 +86,372 @@ function ChartGenerator() {
   ];
 
   const advancedChartTypes = [
-    { id: 'scatter3d', icon: FaChartBar, label: '3D Scatter', is3D: true },
-    { id: 'surface', icon: FaChartArea, label: '3D Surface', is3D: true },
-    { id: 'mesh3d', icon: FaChartLine, label: '3D Mesh', is3D: true }
+    { id: 'scatter', label: 'Scatter Plot' },
+    { id: 'bubble', label: 'Bubble Chart' },
+    { id: 'histogram', label: 'Histogram' },
+    { id: 'box', label: 'Box Plot' },
+    { id: 'violin', label: 'Violin Plot' },
+    { id: 'heatmap', label: 'Heatmap' },
+    { id: 'contour', label: 'Contour Plot' },
+    { id: 'funnel', label: 'Funnel Chart' },
+    { id: 'waterfall', label: 'Waterfall Chart' },
+    { id: 'sunburst', label: 'Sunburst Chart' },
+    { id: 'treemap', label: 'Treemap' },
+    { id: 'polar', label: 'Polar Chart' },
+    { id: 'radar', label: 'Radar Chart' },
+    { id: 'parallel', label: 'Parallel Coordinates' },
+    { id: 'timeline', label: 'Timeline' },
+    { id: 'scatter3d', label: '3D Scatter' },
+    { id: 'line3d', label: '3D Line' },
+    { id: 'surface', label: '3D Surface' },
+    { id: 'mesh3d', label: '3D Mesh' },
+    { id: 'contour3d', label: '3D Contour' },
+    { id: 'bubble3d', label: '3D Bubble' },
+    { id: 'bar3d', label: '3D Bar' },
+    { id: 'volume', label: '3D Volume' }
   ];
 
+  // Chart type configuration: expected data types and Plotly trace types
+  const chartTypeConfig = {
+    bar: {
+      label: 'Bar Chart', icon: FaChartBar, x: ['categorical', 'numeric'], y: ['numeric'], trace: 'bar',
+      format: (data, cols) => ({
+        x: data.map(item => item[cols.x]),
+        y: data.map(item => parseFloat(item[cols.y])),
+        type: 'bar',
+        marker: { color: '#4361ee' }
+      })
+    },
+    line: {
+      label: 'Line Chart', icon: FaChartLine, x: ['categorical', 'numeric'], y: ['numeric'], trace: 'scatter',
+      format: (data, cols) => ({
+        x: data.map(item => item[cols.x]),
+        y: data.map(item => parseFloat(item[cols.y])),
+        type: 'scatter',
+        mode: 'lines+markers',
+        marker: { color: '#4361ee' }
+      })
+    },
+    scatter: {
+      label: 'Scatter Plot',  x: ['numeric'], y: ['numeric'], trace: 'scatter',
+      format: (data, cols) => ({
+        x: data.map(item => parseFloat(item[cols.x])),
+        y: data.map(item => parseFloat(item[cols.y])),
+        type: 'scatter',
+        mode: 'markers',
+        marker: { color: '#4361ee', size: 8 }
+      })
+    },
+    pie: {
+      label: 'Pie Chart', icon: FaChartPie, x: ['categorical'], y: ['numeric'], trace: 'pie',
+      format: (data, cols) => ({
+        labels: data.map(item => item[cols.x]),
+        values: data.map(item => parseFloat(item[cols.y])),
+        type: 'pie',
+        marker: { colors: [ '#4361ee', '#48bfe3', '#b5179e', '#f72585', '#ffbe0b', '#3a86ff' ] }
+      })
+    },
+    donut: {
+      label: 'Donut Chart',  x: ['categorical'], y: ['numeric'], trace: 'pie',
+      format: (data, cols) => ({
+        labels: data.map(item => item[cols.x]),
+        values: data.map(item => parseFloat(item[cols.y])),
+        type: 'pie',
+        hole: 0.5,
+        marker: { colors: [ '#4361ee', '#48bfe3', '#b5179e', '#f72585', '#ffbe0b', '#3a86ff' ] }
+      })
+    },
+    area: {
+      label: 'Area Chart', icon: FaChartArea, x: ['categorical', 'numeric'], y: ['numeric'], trace: 'scatter',
+      format: (data, cols) => ({
+        x: data.map(item => item[cols.x]),
+        y: data.map(item => parseFloat(item[cols.y])),
+        type: 'scatter',
+        fill: 'tozeroy',
+        mode: 'lines',
+        marker: { color: '#4361ee' }
+      })
+    },
+    bubble: {
+      label: 'Bubble Chart',  x: ['numeric'], y: ['numeric'], size: ['numeric'], trace: 'scatter',
+      format: (data, cols) => ({
+        x: data.map(item => parseFloat(item[cols.x])),
+        y: data.map(item => parseFloat(item[cols.y])),
+        marker: { size: data.map(item => parseFloat(item[cols.size])), color: '#4361ee', sizemode: 'area' },
+        mode: 'markers',
+        type: 'scatter'
+      })
+    },
+    histogram: {
+      label: 'Histogram',  x: ['numeric'], trace: 'histogram',
+      format: (data, cols) => ({
+        x: data.map(item => parseFloat(item[cols.x])),
+        type: 'histogram',
+        marker: { color: '#4361ee' }
+      })
+    },
+    box: {
+      label: 'Box Plot', y: ['numeric'], x: ['categorical', 'numeric'], trace: 'box',
+      format: (data, cols) => ({
+        y: data.map(item => parseFloat(item[cols.y])),
+        x: cols.x ? data.map(item => item[cols.x]) : undefined,
+        type: 'box',
+        marker: { color: '#4361ee' }
+      })
+    },
+    violin: {
+      label: 'Violin Plot',  y: ['numeric'], x: ['categorical', 'numeric'], trace: 'violin',
+      format: (data, cols) => ({
+        y: data.map(item => parseFloat(item[cols.y])),
+        x: cols.x ? data.map(item => item[cols.x]) : undefined,
+        type: 'violin',
+        marker: { color: '#4361ee' }
+      })
+    },
+    heatmap: {
+      label: 'Heatmap',  x: ['categorical', 'numeric'], y: ['categorical', 'numeric'], z: ['numeric'], trace: 'heatmap',
+      format: (data, cols) => {
+        const xVals = [...new Set(data.map(item => item[cols.x]))];
+        const yVals = [...new Set(data.map(item => item[cols.y]))];
+        const zGrid = yVals.map(yv => xVals.map(xv => {
+          const found = data.find(item => item[cols.x] === xv && item[cols.y] === yv);
+          return found ? parseFloat(found[cols.z]) : null;
+        }));
+        return {
+          x: xVals,
+          y: yVals,
+          z: zGrid,
+          type: 'heatmap',
+          colorscale: 'Viridis',
+        };
+      }
+    },
+    contour: {
+      label: 'Contour Plot', x: ['numeric'], y: ['numeric'], z: ['numeric'], trace: 'contour',
+      format: (data, cols) => {
+        const xVals = [...new Set(data.map(item => parseFloat(item[cols.x])))];
+        const yVals = [...new Set(data.map(item => parseFloat(item[cols.y])))];
+        const zGrid = yVals.map(yv => xVals.map(xv => {
+          const found = data.find(item => parseFloat(item[cols.x]) === xv && parseFloat(item[cols.y]) === yv);
+          return found ? parseFloat(found[cols.z]) : null;
+        }));
+        return {
+          x: xVals,
+          y: yVals,
+          z: zGrid,
+          type: 'contour',
+          colorscale: 'Viridis',
+        };
+      }
+    },
+    funnel: {
+      label: 'Funnel Chart',  x: ['categorical'], y: ['numeric'], trace: 'funnel',
+      format: (data, cols) => ({
+        x: data.map(item => item[cols.x]),
+        y: data.map(item => parseFloat(item[cols.y])),
+        type: 'funnel',
+        marker: { color: '#4361ee' }
+      })
+    },
+    waterfall: {
+      label: 'Waterfall Chart',x: ['categorical'], y: ['numeric'], trace: 'waterfall',
+      format: (data, cols) => ({
+        x: data.map(item => item[cols.x]),
+        y: data.map(item => parseFloat(item[cols.y])),
+        type: 'waterfall',
+        marker: { color: '#4361ee' }
+      })
+    },
+    sunburst: {
+      label: 'Sunburst Chart', path: ['categorical'], values: ['numeric'], trace: 'sunburst',
+      format: (data, cols) => ({
+        labels: data.map(item => item[cols.path]),
+        parents: data.map(() => ''),
+        values: data.map(item => parseFloat(item[cols.values])),
+        type: 'sunburst',
+      })
+    },
+    treemap: {
+      label: 'Treemap', path: ['categorical'], values: ['numeric'], trace: 'treemap',
+      format: (data, cols) => ({
+        labels: data.map(item => item[cols.path]),
+        parents: data.map(() => ''),
+        values: data.map(item => parseFloat(item[cols.values])),
+        type: 'treemap',
+      })
+    },
+    polar: {
+      label: 'Polar Chart',  theta: ['numeric'], r: ['numeric'], trace: 'scatterpolar',
+      format: (data, cols) => ({
+        theta: data.map(item => parseFloat(item[cols.theta])),
+        r: data.map(item => parseFloat(item[cols.r])),
+        type: 'scatterpolar',
+        mode: 'lines+markers',
+        marker: { color: '#4361ee' }
+      })
+    },
+    radar: {
+      label: 'Radar Chart',  theta: ['categorical'], r: ['numeric'], trace: 'scatterpolar',
+      format: (data, cols) => ({
+        theta: data.map(item => item[cols.theta]),
+        r: data.map(item => parseFloat(item[cols.r])),
+        type: 'scatterpolar',
+        fill: 'toself',
+        marker: { color: '#4361ee' }
+      })
+    },
+    parallel: {
+      label: 'Parallel Coordinates', dimensions: ['numeric'], trace: 'parcoords',
+      format: (data, cols) => ({
+        type: 'parcoords',
+        dimensions: cols.dimensions.map(col => ({
+          label: col,
+          values: data.map(item => parseFloat(item[col]))
+        }))
+      })
+    },
+    timeline: {
+      label: 'Timeline', x: ['categorical'], start: ['numeric'], end: ['numeric'], trace: 'timeline',
+      format: (data, cols) => ({
+        x: data.map(item => item[cols.x]),
+        y: data.map(item => item[cols.start]),
+        base: data.map(item => item[cols.end]),
+        type: 'bar',
+        orientation: 'h',
+        marker: { color: '#4361ee' }
+      })
+    },
+    scatter3d: {
+      label: '3D Scatter', x: ['numeric'], y: ['numeric'], z: ['numeric'], trace: 'scatter3d',
+      format: (data, cols) => ({
+        x: data.map(item => parseFloat(item[cols.x])),
+        y: data.map(item => parseFloat(item[cols.y])),
+        z: data.map(item => parseFloat(item[cols.z])),
+        type: 'scatter3d',
+        mode: 'markers',
+        marker: { color: '#4361ee', size: 5 }
+      })
+    },
+    line3d: {
+      label: '3D Line', icon: FaChartLine, x: ['numeric'], y: ['numeric'], z: ['numeric'], trace: 'scatter3d',
+      format: (data, cols) => ({
+        x: data.map(item => parseFloat(item[cols.x])),
+        y: data.map(item => parseFloat(item[cols.y])),
+        z: data.map(item => parseFloat(item[cols.z])),
+        type: 'scatter3d',
+        mode: 'lines',
+        marker: { color: '#4361ee', size: 5 }
+      })
+    },
+    surface: {
+      label: '3D Surface', x: ['numeric'], y: ['numeric'], z: ['numeric'], trace: 'surface',
+      format: (data, cols) => {
+        const xVals = [...new Set(data.map(item => parseFloat(item[cols.x])))];
+        const yVals = [...new Set(data.map(item => parseFloat(item[cols.y])))];
+        const zGrid = yVals.map(yv => xVals.map(xv => {
+          const found = data.find(item => parseFloat(item[cols.x]) === xv && parseFloat(item[cols.y]) === yv);
+          return found ? parseFloat(found[cols.z]) : null;
+        }));
+        return {
+          x: xVals,
+          y: yVals,
+          z: zGrid,
+          type: 'surface',
+          colorscale: 'Viridis',
+        };
+      }
+    },
+    mesh3d: {
+      label: '3D Mesh', x: ['numeric'], y: ['numeric'], z: ['numeric'], trace: 'mesh3d',
+      format: (data, cols) => ({
+        x: data.map(item => parseFloat(item[cols.x])),
+        y: data.map(item => parseFloat(item[cols.y])),
+        z: data.map(item => parseFloat(item[cols.z])),
+        type: 'mesh3d',
+        opacity: 0.7,
+        color: '#4361ee'
+      })
+    },
+    contour3d: {
+      label: '3D Contour',x: ['numeric'], y: ['numeric'], z: ['numeric'], trace: 'contour3d',
+      format: (data, cols) => {
+        // Not natively supported in plotly.js, fallback to surface/contour
+        const xVals = [...new Set(data.map(item => parseFloat(item[cols.x])))];
+        const yVals = [...new Set(data.map(item => parseFloat(item[cols.y])))];
+        const zGrid = yVals.map(yv => xVals.map(xv => {
+          const found = data.find(item => parseFloat(item[cols.x]) === xv && parseFloat(item[cols.y]) === yv);
+          return found ? parseFloat(found[cols.z]) : null;
+        }));
+        return {
+          x: xVals,
+          y: yVals,
+          z: zGrid,
+          type: 'surface',
+          colorscale: 'Viridis',
+          contours: { z: { show: true, usecolormap: true, highlightcolor: '#ff0000', project: { z: true } } }
+        };
+      }
+    },
+    bubble3d: {
+      label: '3D Bubble',x: ['numeric'], y: ['numeric'], z: ['numeric'], size: ['numeric'], trace: 'scatter3d',
+      format: (data, cols) => ({
+        x: data.map(item => parseFloat(item[cols.x])),
+        y: data.map(item => parseFloat(item[cols.y])),
+        z: data.map(item => parseFloat(item[cols.z])),
+        mode: 'markers',
+        marker: { size: data.map(item => parseFloat(item[cols.size])), color: '#4361ee', sizemode: 'diameter' },
+        type: 'scatter3d'
+      })
+    },
+    bar3d: {
+      label: '3D Bar',  x: ['categorical', 'numeric'], y: ['categorical', 'numeric'], z: ['numeric'], trace: 'bar3d',
+      format: (data, cols) => {
+        // Simulate 3D bar using mesh3d or surface
+        const xVals = [...new Set(data.map(item => item[cols.x]))];
+        const yVals = [...new Set(data.map(item => item[cols.y]))];
+        const zGrid = yVals.map(yv => xVals.map(xv => {
+          const found = data.find(item => item[cols.x] === xv && item[cols.y] === yv);
+          return found ? parseFloat(found[cols.z]) : 0;
+        }));
+        return {
+          x: xVals,
+          y: yVals,
+          z: zGrid,
+          type: 'surface',
+          colorscale: 'Viridis',
+        };
+      }
+    },
+    volume: {
+      label: '3D Volume',  x: ['numeric'], y: ['numeric'], z: ['numeric'], value: ['numeric'], trace: 'volume',
+      format: (data, cols) => {
+        // Not natively supported in plotly.js, fallback to mesh3d
+        return {
+          x: data.map(item => parseFloat(item[cols.x])),
+          y: data.map(item => parseFloat(item[cols.y])),
+          z: data.map(item => parseFloat(item[cols.z])),
+          value: data.map(item => parseFloat(item[cols.value])),
+          type: 'mesh3d',
+          opacity: 0.5,
+          color: '#4361ee'
+        };
+      }
+    }
+  };
+
+  const allChartTypes = Object.entries(chartTypeConfig).map(([id, cfg]) => ({ id, ...cfg }));
+
   const generatePlotData = () => {
-    if (!selectedColumns.x || !selectedColumns.y) return null;
-
-    const x = dummyData.data.map(item => item[selectedColumns.x]);
-    const y = dummyData.data.map(item => item[selectedColumns.y]);
-    const z = is3D ? dummyData.data.map(item => item[selectedColumns.z]) : undefined;
-
-    return [{
-      x,
-      y,
-      z,
-      type: chartType,
-      mode: 'markers',
-      marker: { color: '#4361ee' }
-    }];
+    if (!excelData) return null;
+    const config = chartTypeConfig[chartType];
+    if (!config) return null;
+    // Check required columns
+    const required = Object.keys(config).filter(k => Array.isArray(config[k]) && config[k].length > 0);
+    for (const key of required) {
+      if (!selectedColumns[key]) return null;
+    }
+    // Format data for Plotly
+    return [config.format(excelData, selectedColumns)];
   };
 
   const plotData = generatePlotData();
@@ -53,6 +459,14 @@ function ChartGenerator() {
   const handleChartTypeSelect = (type, is3DChart = false) => {
     setChartType(type);
     setIs3D(is3DChart);
+    setSelectedColumns({ x: '', y: '', z: '' }); 
+  };
+
+  // In the axis selection UI, only show compatible fields for each axis
+  const getCompatibleFields = (axis) => {
+    const config = chartTypeConfig[chartType];
+    if (!config || !config[axis]) return columns;
+    return columns.filter(col => config[axis].includes(columnTypes[col]));
   };
 
   return (
@@ -61,7 +475,31 @@ function ChartGenerator() {
         <h1>Chart Generator</h1>
         <p>Create interactive charts from your Excel data</p>
       </div>
-
+      {loading && <div>Loading data...</div>}
+      {error && <div style={{ color: 'red' }}>{error}</div>}
+      {excelData && (
+        <div style={{ marginBottom: 24 }}>
+          <h4>Data Preview</h4>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 16 }}>
+            <thead>
+              <tr>
+                {columns.map(col => (
+                  <th key={col} style={{ borderBottom: '1px solid #eee', padding: 4, textAlign: 'left' }}>{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {excelData.slice(0, 5).map((row, idx) => (
+                <tr key={idx}>
+                  {columns.map((col, i) => (
+                    <td key={i} style={{ borderBottom: '1px solid #f5f5f5', padding: 4 }}>{String(row[col])}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
       <div className="chart-controls">
         <div className="control-section">
           <h2>Chart Type</h2>
@@ -77,76 +515,57 @@ function ChartGenerator() {
               </button>
             ))}
           </div>
-          
-          <button 
+          <button
             className="show-more-btn"
             onClick={() => setShowMoreCharts(!showMoreCharts)}
           >
             <FaChevronDown className={showMoreCharts ? 'rotated' : ''} />
             {showMoreCharts ? 'Show Less' : 'Show More Charts'}
           </button>
-
           {showMoreCharts && (
             <div className="advanced-charts">
               {advancedChartTypes.map(type => (
                 <button
                   key={type.id}
                   className={`chart-type-btn ${chartType === type.id ? 'active' : ''}`}
-                  onClick={() => handleChartTypeSelect(type.id, type.is3D)}
+                  onClick={() => handleChartTypeSelect(type.id, type.id.includes('3d'))}
                 >
-                  <type.icon />
+                  {/* No icon for advanced charts to avoid import errors */}
                   <span>{type.label}</span>
                 </button>
               ))}
             </div>
           )}
         </div>
-
         <div className="control-section">
           <h2>Select Data</h2>
           <div className="axis-selection">
-            <div className="axis-control">
-              <label>X Axis</label>
-              <select
-                value={selectedColumns.x}
-                onChange={(e) => setSelectedColumns({ ...selectedColumns, x: e.target.value })}
-              >
-                <option value="">Select column</option>
-                {dummyData.columns.map(col => (
-                  <option key={col} value={col}>{col}</option>
-                ))}
-              </select>
-            </div>
-            <div className="axis-control">
-              <label>Y Axis</label>
-              <select
-                value={selectedColumns.y}
-                onChange={(e) => setSelectedColumns({ ...selectedColumns, y: e.target.value })}
-              >
-                <option value="">Select column</option>
-                {dummyData.columns.map(col => (
-                  <option key={col} value={col}>{col}</option>
-                ))}
-              </select>
-            </div>
-            {is3D && (
-              <div className="axis-control">
-                <label>Z Axis</label>
+            {Object.keys(chartTypeConfig[chartType]).filter(axis => Array.isArray(chartTypeConfig[chartType][axis])).map(axis => (
+              <div className="axis-control" key={axis}>
+                <label>{axis.toUpperCase()} Axis</label>
                 <select
-                  value={selectedColumns.z}
-                  onChange={(e) => setSelectedColumns({ ...selectedColumns, z: e.target.value })}
+                  value={selectedColumns[axis] || ''}
+                  onChange={e => setSelectedColumns({ ...selectedColumns, [axis]: e.target.value })}
                 >
                   <option value="">Select column</option>
-                  {dummyData.columns.map(col => (
+                  {getCompatibleFields(axis).map(col => (
                     <option key={col} value={col}>{col}</option>
                   ))}
                 </select>
+                {/* Suggestions for this axis */}
+                {axisSuggestions[axis] && axisSuggestions[axis].length > 0 && !selectedColumns[axis] && (
+                  <div className="axis-suggestions">
+                    <span style={{ color: 'green' }}>Suggestion: </span>
+                    {axisSuggestions[axis].map(col => (
+                      <button key={col} className="suggestion-btn" style={{ color: 'green' }} onClick={() => setSelectedColumns({ ...selectedColumns, [axis]: col })}>{col}</button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
-
       <div className="chart-display">
         {plotData ? (
           <Plot

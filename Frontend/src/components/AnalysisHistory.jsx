@@ -23,7 +23,7 @@ function AnalysisHistory() {
   return (
     <div className="analysis-history">
       <div className="history-header">
-        <h1>Analysis History</h1>
+        <h1>Chart History</h1>
         <p>View and manage your previous analyses</p>
       </div>
 

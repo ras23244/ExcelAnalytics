@@ -42,14 +42,12 @@ function Sidebar() {
             <NavLink to="/upload" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
               <FaUpload /> Upload Excel
             </NavLink>
-            <NavLink to="/analysis" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-              <FaDatabase /> Data Analysis
-            </NavLink>
+            
             <NavLink to="/chart-generator" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
               <FaChartBar /> Chart Generator
             </NavLink>
             <NavLink to="/history" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-              <FaHistory /> Analysis History
+              <FaHistory /> Chart History
             </NavLink>
             {isAdmin && (
               <NavLink to="/admin" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>

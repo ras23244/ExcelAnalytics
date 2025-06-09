@@ -19,5 +19,6 @@ const excelDataSchema = new mongoose.Schema({
         default: Date.now
     }
 }, { timestamps: true });
+
 const excelDataModel = mongoose.model('excelData', excelDataSchema);
 module.exports = excelDataModel;

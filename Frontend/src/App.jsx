@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import UploadExcel from './components/UploadExcel';
-import DataAnalysis from './components/DataAnalysis';
 import ChartGenerator from './components/ChartGenerator';
 import AnalysisHistory from './components/AnalysisHistory';
 import AdminPanel from './components/AdminPanel';
@@ -32,14 +31,7 @@ function App() {
                   </UserProtectWrapper>
                 }
               />
-              <Route
-                path="/analysis"
-                element={
-                  <UserProtectWrapper>
-                    <DataAnalysis />
-                  </UserProtectWrapper>
-                }
-              />
+              
               <Route
                 path="/chart-generator"
                 element={

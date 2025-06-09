@@ -26,6 +26,6 @@ app.get('/', (req, res) => {
 
 app.use('/user',userRoutes);
 app.use('/data', excelDataRoutes);
-app.use('/charts', chartRecordRoutes);
+app.use('/chart', chartRecordRoutes);
 
 module.exports= app;
