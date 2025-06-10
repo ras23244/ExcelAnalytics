@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   FaChartBar,
@@ -7,6 +7,8 @@ import {
   FaHistory,
   FaCog,
   FaSignOutAlt,
+  FaBars,
+  FaTimes,
 } from "react-icons/fa";
 import { MdDashboard } from "react-icons/md";
 import "./Sidebar.css";
@@ -14,102 +16,133 @@ import { UserDataContext } from "../context/userContext";
 
 function Sidebar() {
   const { user } = useContext(UserDataContext);
-  const isLoggedIn = user && user.email;
+  const token = localStorage.getItem("token");
+  const isLoggedIn = user && user.email && token;
   const isAdmin = user && user.role === "admin";
 
-  return (
-    <div className="sidebar">
-      <div className="logo">
-        <FaChartBar className="logo-icon" />
-        <h2>ExcelHub</h2>
-      </div>
-      <div className="user-info">
-        <div className="avatar">
-          {user?.name ? user.name[0].toUpperCase() : "U"}
-        </div>
-        <div className="user-details">
-          <h3>{user?.name || "User"}</h3>
-          <p>{user?.role === "admin" ? "Admin" : "User"}</p>
-        </div>
-      </div>
-      <nav className="nav-menu">
-        {!isLoggedIn && (
-          <>
-            <NavLink
-              to="/login"
-              className={({ isActive }) =>
-                isActive ? "nav-item active" : "nav-item"
-              }
-            >
-              Login
-            </NavLink>
-            <NavLink
-              to="/register"
-              className={({ isActive }) =>
-                isActive ? "nav-item active" : "nav-item"
-              }
-            >
-              Signup
-            </NavLink>
-          </>
-        )}
-        {isLoggedIn && (
-          <>
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                isActive ? "nav-item active" : "nav-item"
-              }
-            >
-              <MdDashboard /> Dashboard
-            </NavLink>
-            <NavLink
-              to="/upload"
-              className={({ isActive }) =>
-                isActive ? "nav-item active" : "nav-item"
-              }
-            >
-              <FaUpload /> Upload Excel
-            </NavLink>
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-            <NavLink
-              to="/chart-generator"
-              className={({ isActive }) =>
-                isActive ? "nav-item active" : "nav-item"
-              }
-            >
-              <FaChartBar /> Chart Generator
-            </NavLink>
-            <NavLink
-              to="/history"
-              className={({ isActive }) =>
-                isActive ? "nav-item active" : "nav-item"
-              }
-            >
-              <FaHistory /> Chart History
-            </NavLink>
-            {isAdmin && (
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
+  return (
+    <>
+      <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+        {mobileMenuOpen ? <FaTimes /> : <FaBars />}
+      </button>
+
+      <div
+        className={`sidebar-overlay ${mobileMenuOpen ? "active" : ""}`}
+        onClick={closeMobileMenu}
+      ></div>
+
+      <div className={`sidebar ${mobileMenuOpen ? "mobile-open" : ""}`}>
+        <div className="logo">
+          <FaChartBar className="logo-icon" />
+          <h2>ExcelHub</h2>
+        </div>
+        {isLoggedIn && (
+          <div className="user-info">
+            <div className="avatar">
+              {user?.name ? user.name[0].toUpperCase() : "U"}
+            </div>
+            <div className="user-detail">
+              <h3>{user?.name || "User"}</h3>
+              <p>{user?.role === "admin" ? "Admin" : "User"}</p>
+            </div>
+          </div>
+        )}
+        <nav className="nav-menu">
+          {!isLoggedIn && (
+            <>
               <NavLink
-                to="/admin"
+                to="/login"
                 className={({ isActive }) =>
                   isActive ? "nav-item active" : "nav-item"
                 }
+                onClick={closeMobileMenu}
               >
-                <FaCog /> Admin Panel
+                Login
               </NavLink>
-            )}
-            <NavLink
-              to="/signout"
-              className={({ isActive }) =>
-                isActive ? "nav-item active" : "nav-item"
-              }
-            >
-              <FaSignOutAlt /> Sign Out
-            </NavLink>
-          </>
-        )}
-      </nav>
-    </div>
+              <NavLink
+                to="/register"
+                className={({ isActive }) =>
+                  isActive ? "nav-item active" : "nav-item"
+                }
+                onClick={closeMobileMenu}
+              >
+                Signup
+              </NavLink>
+            </>
+          )}
+          {isLoggedIn && (
+            <>
+              <NavLink
+                to="/"
+                className={({ isActive }) =>
+                  isActive ? "nav-item active" : "nav-item"
+                }
+                onClick={closeMobileMenu}
+              >
+                <MdDashboard /> Dashboard
+              </NavLink>
+              <NavLink
+                to="/upload"
+                className={({ isActive }) =>
+                  isActive ? "nav-item active" : "nav-item"
+                }
+                onClick={closeMobileMenu}
+              >
+                <FaUpload /> Upload Excel
+              </NavLink>
+              <NavLink
+                to="/chart-generator"
+                className={({ isActive }) =>
+                  isActive ? "nav-item active" : "nav-item"
+                }
+                onClick={closeMobileMenu}
+              >
+                <FaChartBar /> Chart Generator
+              </NavLink>
+              <NavLink
+                to="/history"
+                className={({ isActive }) =>
+                  isActive ? "nav-item active" : "nav-item"
+                }
+                onClick={closeMobileMenu}
+              >
+                <FaHistory /> Chart History
+              </NavLink>
+              {isAdmin && (
+                <NavLink
+                  to="/admin"
+                  className={({ isActive }) =>
+                    isActive ? "nav-item active" : "nav-item"
+                  }
+                  onClick={closeMobileMenu}
+                >
+                  <FaCog /> Admin Panel
+                </NavLink>
+              )}
+              <NavLink
+                to="/signout"
+                className={({ isActive }) =>
+                  isActive ? "nav-item active" : "nav-item"
+                }
+                onClick={closeMobileMenu}
+              >
+                <FaSignOutAlt /> Sign Out
+              </NavLink>
+            </>
+          )}
+        </nav>
+      </div>
+    </>
   );
 }
 

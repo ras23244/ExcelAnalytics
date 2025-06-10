@@ -51,7 +51,7 @@ function UploadExcel() {
       file.type === 'application/vnd.ms-excel'
     ) {
       setSelectedFile(file);
-      console.log('Selected file:', file);
+      
     } else {
       alert('Please upload only Excel files (.xlsx or .xls)');
     }

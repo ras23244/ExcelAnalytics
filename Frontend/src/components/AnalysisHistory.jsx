@@ -31,8 +31,7 @@ function AnalysisHistory() {
         ]);
         setFileUploads(filesRes.data || []);
         setChartRecords(chartsRes.data || []);
-        console.log("File uploads:", filesRes.data);
-        console.log("Chart records:", chartsRes.data);
+        
       } catch (err) {
         setError('Failed to load history.');
       }

@@ -33,8 +33,8 @@ function Dashboard() {
           charts: chartsRes.data.length || 0,
           downloads: 0 // Replace with real value if you have downloads tracking
         });
-        setRecentUploads(uploadsRes.data.slice(0, 3));
-        setRecentCharts(chartsRes.data.slice(0, 3));
+        setRecentUploads(uploadsRes.data.slice(0, 2));
+        setRecentCharts(chartsRes.data.slice(0, 2));
       } catch (err) {
         setStats({ uploads: 0, charts: 0, downloads: 0 });
         setRecentUploads([]);

@@ -26,7 +26,7 @@ module.exports.register = async (req, res, next) => {
     await newUser.save();
     const token = newUser.generateAuthToken();
 
-    res.status(201).json({ token, newUser });
+    res.status(201).json({ token });
   } catch (error) {
     console.error("Error during registration:", error);
     res.status(500).json({ message: "Internal server error" });

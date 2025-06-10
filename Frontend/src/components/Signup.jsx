@@ -2,7 +2,6 @@ import React, { useState,useContext } from 'react';
 import axios from 'axios';
 import './Signup.css';
 import { useNavigate } from 'react-router-dom';
-import { UserDataContext } from '../context/userContext';
 
 const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -18,7 +17,6 @@ function Signup() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const { user, setUser } = useContext(UserDataContext);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -38,15 +36,6 @@ function Signup() {
       });
       if (res.status === 201) {
         setSuccess('Signup successful! You can now log in.');
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('user', JSON.stringify(res.data.newUser));
-        setUser({
-          email: res.data.newUser.email,
-          name: res.data.newUser.name,
-          role: res.data.newUser.role,
-        });
-        console.log("from signup page",user);
-
         setForm({ name: '', email: '', password: '', role: 'user' });
         navigate('/login')
       }

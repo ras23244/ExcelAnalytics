@@ -46,7 +46,7 @@ function Login() {
         });
         setForm({email: '', password: ''});
         
-        console.log("from login page", user);
+       
         navigate('/');
       }
     } catch (err) {
