@@ -2,12 +2,28 @@
   display: flex;
   min-height: 100vh;
   background-color: #f5f6fa;
+  transition: all 0.3s ease;
 }
 
 .main-content {
   flex: 1;
   padding: 2rem;
   margin-left: 280px;
+  transition: margin-left 0.3s ease;
+}
+
+/* Mobile and tablet responsive styles */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 0.5rem;
+  }
 }
 
 :root {
@@ -19,6 +35,6 @@
   --error-color: #f44336;
   --text-primary: #2d3748;
   --text-secondary: #718096;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f7fafc;
+  --bg-primary: #f5f6fa;
+  --bg-secondary: #ffffff;
 }

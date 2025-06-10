@@ -4,8 +4,27 @@
   padding: 2rem;
 }
 
+@media (max-width: 1024px) {
+  .chart-generator {
+    max-width: 100%;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-generator {
+    padding: 0.5rem;
+  }
+}
+
 .chart-header {
   margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .chart-header {
+    margin-bottom: 1.5rem;
+  }
 }
 
 .chart-header h1 {
@@ -14,8 +33,20 @@
   margin-bottom: 0.5rem;
 }
 
+@media (max-width: 768px) {
+  .chart-header h1 {
+    font-size: 1.5rem;
+  }
+}
+
 .chart-header p {
   color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .chart-header p {
+    font-size: 0.875rem;
+  }
 }
 
 .chart-controls {
@@ -26,8 +57,21 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+@media (max-width: 768px) {
+  .chart-controls {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
 .control-section {
   margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .control-section {
+    margin-bottom: 1rem;
+  }
 }
 
 .control-section h2 {
@@ -36,11 +80,31 @@
   margin-bottom: 1rem;
 }
 
+@media (max-width: 768px) {
+  .control-section h2 {
+    font-size: 1.125rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
 .chart-types {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 1rem;
   margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .chart-types {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-types {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .chart-type-btn {
@@ -68,6 +132,20 @@
   border-color: var(--primary-color);
 }
 
+@media (max-width: 768px) {
+  .chart-type-btn {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-type-btn {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
 .show-more-btn {
   display: flex;
   align-items: center;
@@ -92,6 +170,13 @@
   transform: rotate(180deg);
 }
 
+@media (max-width: 768px) {
+  .show-more-btn {
+    padding: 0.625rem;
+    font-size: 0.875rem;
+  }
+}
+
 .advanced-charts {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -99,10 +184,30 @@
   margin-top: 1rem;
 }
 
+@media (max-width: 768px) {
+  .advanced-charts {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .advanced-charts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .axis-selection {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .axis-selection {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
 }
 
 .axis-control {
@@ -116,12 +221,25 @@
   color: var(--text-secondary);
 }
 
+@media (max-width: 768px) {
+  .axis-control label {
+    font-size: 0.75rem;
+  }
+}
+
 .axis-control select {
   padding: 0.75rem;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background: white;
   color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+  .axis-control select {
+    padding: 0.625rem;
+    font-size: 0.875rem;
+  }
 }
 
 .chart-display {
@@ -133,6 +251,25 @@
   justify-content: center;
   align-items: center;
   min-height: 600px;
+}
+
+@media (max-width: 1024px) {
+  .chart-display {
+    min-height: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .chart-display {
+    padding: 1rem;
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-display {
+    min-height: 300px;
+  }
 }
 
 .empty-chart {
@@ -148,29 +285,8 @@
   opacity: 0.5;
 }
 
-[data-theme="dark"] {
-  --text-primary: #ffffff;
-  --text-secondary: #a0aec0;
-  --bg-primary: #1a202c;
-  --bg-secondary: #2d3748;
-}
-
-[data-theme="dark"] .chart-controls,
-[data-theme="dark"] .chart-display {
-  background: var(--bg-secondary);
-}
-
-[data-theme="dark"] .chart-type-btn {
-  background: var(--bg-secondary);
-  border-color: #4a5568;
-}
-
-[data-theme="dark"] .chart-type-btn:hover {
-  border-color: var(--primary-color);
-}
-
-[data-theme="dark"] .axis-control select {
-  background: var(--bg-secondary);
-  border-color: #4a5568;
-  color: var(--text-primary);
+@media (max-width: 768px) {
+  .empty-icon {
+    font-size: 2rem;
+  }
 }
