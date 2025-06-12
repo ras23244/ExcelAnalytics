@@ -13,7 +13,7 @@ function AnalysisHistory() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-    const url = `${import.meta.env.VITE_BASE_URL}`;
+    const url = `https://excelanalytics-backend.onrender.com`;
 
   useEffect(() => {
     const fetchData = async () => {
