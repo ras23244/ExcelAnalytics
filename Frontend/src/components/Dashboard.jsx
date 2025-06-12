@@ -15,7 +15,7 @@ function Dashboard() {
   const [recentCharts, setRecentCharts] = useState([]);
   const [recentUploads, setRecentUploads] = useState([]);
 
-    const url = `${import.meta.env.VITE_BASE_URL}`;
+    const url = `https://excelanalytics-backend.onrender.com`;
 
   useEffect(() => {
     const fetchStats = async () => {
