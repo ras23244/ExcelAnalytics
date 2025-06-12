@@ -5,7 +5,7 @@ import './UploadExcel.css';
 import { useNavigate } from 'react-router-dom';
 import { useDataContext } from '../context/DataContext'; // <-- import context
 
-const url = import.meta.env.VITE_BASE_URL;
+const url = "https://excelanalytics-backend.onrender.com";
 
 function UploadExcel() {
   const [dragActive, setDragActive] = useState(false);
