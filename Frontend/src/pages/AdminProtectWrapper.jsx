@@ -5,6 +5,7 @@ import { UserDataContext } from '../context/userContext';
 
 
 const AdminProtectWrapper = ({ children }) => {
+    const url = `https://excelanalytics-backend.onrender.com`;
     const token = localStorage.getItem('token');
     const navigate = useNavigate();
     const {user,setUser}= useContext(UserDataContext);
@@ -14,7 +15,7 @@ const AdminProtectWrapper = ({ children }) => {
         if (!token) {
             navigate('/login');
         }
-        axios.get(`${import.meta.env.VITE_BASE_URL}/user/admin-profile`,{
+        axios.get(`${url}/user/admin-profile`,{
             headers:{
                 Authorization: `Bearer ${token}`
             }
