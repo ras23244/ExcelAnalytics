@@ -96,3 +96,8 @@
   margin-bottom: 0.5rem;
   font-size: 0.98rem;
 }
+.mid{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

@@ -19,7 +19,7 @@ function Sidebar() {
   const token = localStorage.getItem("token");
   const isLoggedIn = user && user.email && token;
   const isAdmin = user && user.role === "admin";
-
+   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {

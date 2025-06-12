@@ -4,8 +4,9 @@ import Plot from 'react-plotly.js';
 import { FaChartBar, FaChartLine, FaChartPie, FaChartArea, FaChevronDown } from 'react-icons/fa';
 import './ChartGenerator.css';
 import axios from 'axios';
+import { useDataContext } from '../context/DataContext';
 
-const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
+  const url = `${import.meta.env.VITE_BASE_URL}`;
 
 function ChartGenerator() {
   const location = useLocation();
@@ -16,6 +17,9 @@ function ChartGenerator() {
   const yParam = searchParams.get('y');
   const zParam = searchParams.get('z');
   const chartTitleParam = searchParams.get('chartTitle');
+
+  // Use context for uploads
+  const { uploads, setUploads, charts, setCharts } = useDataContext();
 
   const [chartType, setChartType] = useState(chartTypeParam || 'bar');
   const [selectedColumns, setSelectedColumns] = useState({
@@ -33,32 +37,57 @@ function ChartGenerator() {
   const [axisSuggestions, setAxisSuggestions] = useState({ x: [], y: [], z: [] });
   const [chartSaved, setChartSaved] = useState(false);
   const [savingChart, setSavingChart] = useState(false);
+  const [aiInsights, setAiInsights] = useState('');
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [insightsError, setInsightsError] = useState('');
+  const [showInsights, setShowInsights] = useState(false);
 
   useEffect(() => {
     if (!recordId) return;
     setLoading(true);
     setError('');
-    const token = localStorage.getItem('token'); 
-    axios.get(`${VITE_BASE_URL}/data/${recordId}`, {
-      withCredentials: true,
-      headers: {
-        Authorization: token ? `Bearer ${token}` : undefined,
-      },
-    })
-      .then(res => {
+    const fetchData = async () => {
+      // Try to find the file in uploads context
+      if (uploads && Array.isArray(uploads)) {
+        const found = uploads.find(u => u._id === recordId);
+        if (found && found.data && Array.isArray(found.data)) {
+          setExcelData(found.data);
+          setColumns(Object.keys(found.data[0] || {}));
+          setLoading(false);
+          return;
+        }
+      }
+      // If not found or no data, fetch from backend
+      const token = localStorage.getItem('token');
+      try {
+        const res = await axios.get(`${url}/data/${recordId}`, {
+          withCredentials: true,
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+        });
         if (res.status === 200 && res.data && Array.isArray(res.data.data)) {
           setExcelData(res.data.data);
           setColumns(Object.keys(res.data.data[0] || {}));
+          // Optionally, update uploads context with this file's data
+          if (uploads && Array.isArray(uploads)) {
+            const idx = uploads.findIndex(u => u._id === recordId);
+            if (idx !== -1) {
+              const updated = [...uploads];
+              updated[idx] = { ...updated[idx], data: res.data.data };
+              setUploads(updated);
+            }
+          }
         } else {
           setError('No data found for this record.');
         }
-        setLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         setError(err.response?.data?.message || 'Failed to fetch data.');
-        setLoading(false);
-      });
-  }, [recordId]);
+      }
+      setLoading(false);
+    };
+    fetchData();
+  }, [recordId, uploads, setUploads]);
 
   useEffect(() => {
     if (!excelData || columns.length === 0) return;
@@ -494,11 +523,15 @@ function ChartGenerator() {
           payload[axis + 'Axis'] = selectedColumns[axis];
         }
       });
-      await axios.post(`${VITE_BASE_URL}/chart/create`, payload, {
+      const res = await axios.post(`${url}/chart/create`, payload, {
         headers: { Authorization: token ? `Bearer ${token}` : undefined },
         withCredentials: true
       });
-      setChartSaved(true);
+      if (res.status === 201 && res.data && res.data.chart) {
+        // Update charts in context immediately
+        setCharts(prev => prev ? [res.data.chart, ...prev] : [res.data.chart]);
+        setChartSaved(true);
+      }
     } catch (err) {
       setChartSaved(false);
       alert('Failed to save chart.');
@@ -525,12 +558,62 @@ function ChartGenerator() {
     // setChartTitle(chartTitleParam || '');
   }, [chartTypeParam, xParam, yParam, zParam]);
 
+  // Fetch AI insights only when button is clicked
+  const handleGetInsights = async () => {
+    if (!excelData || excelData.length === 0) return;
+    setInsightsLoading(true);
+    setInsightsError('');
+    setAiInsights('');
+    setShowInsights(true);
+    try {
+      const res = await axios.post(
+        `${url}/api/insights`,
+        { data: excelData.slice(0, 20) },
+        {
+          headers: { 'Content-Type': 'application/json' },
+          withCredentials: true,
+        }
+      );
+      setAiInsights(res.data.insights);
+    } catch (err) {
+      setInsightsError('Failed to fetch AI insights.');
+    }
+    setInsightsLoading(false);
+  };
+
   return (
     <div className="chart-generator">
       <div className="chart-header">
         <h1>Chart Generator</h1>
         <p>Create interactive charts from your Excel data</p>
       </div>
+
+      {/* --- AI Insights Section --- */}
+      <div className="ai-insights" style={{ background: '#f6f9ff', border: '1px solid #e0e7ef', borderRadius: 8, padding: 16, marginBottom: 24 }}>
+        <h3 style={{ marginTop: 0 }}>AI Insights & Chart Suggestions</h3>
+        <button
+          className="get-insights-btn"
+          onClick={handleGetInsights}
+          disabled={insightsLoading || !excelData || excelData.length === 0}
+          style={{ marginBottom: 12 }}
+        >
+          {insightsLoading ? 'Getting AI Insights...' : 'Get AI Insights'}
+        </button>
+        {showInsights && (
+          <>
+            {insightsLoading && <div>Loading AI insights...</div>}
+            {insightsError && <div style={{ color: 'red' }}>{insightsError}</div>}
+            {!insightsLoading && !insightsError && aiInsights && (
+              <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', color: '#222' }}>{aiInsights}</pre>
+            )}
+            {!insightsLoading && !insightsError && !aiInsights && (
+              <div style={{ color: '#888' }}>AI will suggest insights and chart types here after you click the button.</div>
+            )}
+          </>
+        )}
+      </div>
+      {/* --- End AI Insights Section --- */}
+
       {loading && <div>Loading data...</div>}
       {error && <div style={{ color: 'red' }}>{error}</div>}
       {excelData && (

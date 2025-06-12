@@ -1,14 +1,14 @@
 const chartRecordModel = require('../models/chartRecord.model');
 const excelDataModel = require('../models/excelData.model');
 const { createCanvas } = require('canvas');
-const PDFDocument = require('pdfkit');
+
 const fs = require('fs');
 const path = require('path');
 
 module.exports.createChartRecord = async (req, res) => {
     try {
         const { excelRecordId, chartType, xAxis, yAxis, chartTitle } = req.body;
-    
+
         // Validate if the Excel record exists
         const excelRecord = await excelDataModel.findById(excelRecordId);
         if (!excelRecord) {
@@ -24,9 +24,14 @@ module.exports.createChartRecord = async (req, res) => {
             chartTitle: chartTitle
         });
         await newChartRecord.save();
+
+        // Populate excelRecordId for frontend context
+        const populatedChart = await chartRecordModel.findById(newChartRecord._id)
+            .populate('excelRecordId', 'fileName uploadedAt');
+
         res.status(201).json({
             message: "Chart record created successfully",
-            chartRecord: newChartRecord
+            chart: populatedChart
         });
     }
     catch (err) {

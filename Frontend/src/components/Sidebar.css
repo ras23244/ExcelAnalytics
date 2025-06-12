@@ -32,6 +32,7 @@
 }
 
 .logo {
+  padding-left: 34px;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -144,20 +145,7 @@
   }
 }
 
-.theme-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 2rem;
-  width: 100%;
-}
+
 
 .theme-toggle:hover {
   background: rgba(255, 255, 255, 0.2);
@@ -183,7 +171,7 @@
   padding: 0.75rem;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 1.25rem;
+  font-size: 1.00rem;
 }
 
 @media (max-width: 1024px) {

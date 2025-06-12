@@ -3,8 +3,9 @@ import axios from 'axios';
 import './Signup.css';
 import { useNavigate } from 'react-router-dom';
 import { UserDataContext } from '../context/userContext';
+import { useDataContext } from '../context/DataContext';
 
-const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
+const url = import.meta.env.VITE_BASE_URL;
 
 function Login() {
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ function Login() {
   const [success, setSuccess] = useState('');
 
   const { user, setUser } = useContext(UserDataContext);
+  const { clearUploads, clearCharts } = useDataContext();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -30,7 +32,7 @@ function Login() {
     setError('');
     setSuccess('');
     try {
-      const res = await axios.post(`${VITE_BASE_URL}/user/login`, form, {
+      const res = await axios.post(`${url}/user/login`, form, {
         headers: { 'Content-Type': 'application/json' },
         withCredentials: true,
       });
@@ -45,8 +47,8 @@ function Login() {
           role: res.data.user.role,
         });
         setForm({email: '', password: ''});
-        
-       
+        clearUploads();
+        clearCharts();
         navigate('/');
       }
     } catch (err) {
@@ -93,7 +95,7 @@ function Login() {
         <button className="signup-btn" type="submit" disabled={loading}>
           {loading ? ' Logging...' : ' Login'}
         </button>
-        <div>Don't have account?</div>
+        <div className="mid">Don't have account?</div>
         <button className="signup-btn" type="button" onClick={() => navigate('/register')}>
           Sign Up
         </button>

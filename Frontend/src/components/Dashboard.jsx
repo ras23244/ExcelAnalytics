@@ -1,40 +1,53 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { FaFileUpload, FaChartLine, FaDatabase, FaDownload } from 'react-icons/fa';
+import { FaFileUpload, FaChartLine, FaDownload } from 'react-icons/fa';
 import './Dashboard.css';
 import { useNavigate } from 'react-router-dom';
 import { UserDataContext } from '../context/userContext';
 import axios from 'axios';
+import { useDataContext } from '../context/DataContext';
 
 function Dashboard() {
   const navigate = useNavigate();
   const { user } = useContext(UserDataContext);
+  const { uploads, setUploads, charts, setCharts } = useDataContext();
   const [stats, setStats] = useState({ uploads: 0, charts: 0, downloads: 0 });
   const [loading, setLoading] = useState(true);
   const [recentCharts, setRecentCharts] = useState([]);
   const [recentUploads, setRecentUploads] = useState([]);
 
+    const url = `${import.meta.env.VITE_BASE_URL}`;
+
   useEffect(() => {
     const fetchStats = async () => {
       setLoading(true);
       try {
+        let uploadsData = uploads;
+        let chartsData = charts;
         const token = localStorage.getItem('token');
-        // Get uploads
-        const uploadsRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/user/my-uploads`, {
-          headers: { Authorization: token ? `Bearer ${token}` : undefined },
-          withCredentials: true
-        });
-        // Get charts
-        const chartsRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/chart/my-charts`, {
-          headers: { Authorization: token ? `Bearer ${token}` : undefined },
-          withCredentials: true
-        });
+
+        if (!uploadsData) {
+          const uploadsRes = await axios.get(`${url}/user/my-uploads`, {
+            headers: { Authorization: token ? `Bearer ${token}` : undefined },
+            withCredentials: true
+          });
+          uploadsData = uploadsRes.data;
+          setUploads(uploadsData);
+        }
+        if (!chartsData) {
+          const chartsRes = await axios.get(`${url}/chart/my-charts`, {
+            headers: { Authorization: token ? `Bearer ${token}` : undefined },
+            withCredentials: true
+          });
+          chartsData = chartsRes.data;
+          setCharts(chartsData);
+        }
         setStats({
-          uploads: uploadsRes.data.length || 0,
-          charts: chartsRes.data.length || 0,
+          uploads: uploadsData.length || 0,
+          charts: chartsData.length || 0,
           downloads: 0 // Replace with real value if you have downloads tracking
         });
-        setRecentUploads(uploadsRes.data.slice(0, 2));
-        setRecentCharts(chartsRes.data.slice(0, 2));
+        setRecentUploads(uploadsData.slice(0, 2));
+        setRecentCharts(chartsData.slice(0, 2));
       } catch (err) {
         setStats({ uploads: 0, charts: 0, downloads: 0 });
         setRecentUploads([]);
@@ -43,7 +56,7 @@ function Dashboard() {
       setLoading(false);
     };
     fetchStats();
-  }, []);
+  }, [uploads, charts, setUploads, setCharts]);
 
   return (
     <div className="dashboard">
@@ -63,7 +76,6 @@ function Dashboard() {
           <div className="stat-info">
             <h3>Total Uploads</h3>
             <div className="stat-value">{loading ? '...' : stats.uploads}</div>
-            {/* You can add a real stat-change if you track it */}
           </div>
         </div>
 

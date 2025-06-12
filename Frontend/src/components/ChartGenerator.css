@@ -7,13 +7,16 @@
 @media (max-width: 1024px) {
   .chart-generator {
     max-width: 100%;
-    padding: 1rem;
+    padding: 3rem;
   }
 }
 
 @media (max-width: 768px) {
   .chart-generator {
-    padding: 0.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-top: 3rem;
+    padding-left: 3rem;
   }
 }
 

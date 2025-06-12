@@ -1,17 +1,19 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { FaFileAlt, FaChartBar, FaDownload } from 'react-icons/fa';
+import React, { useContext, useEffect, useState } from 'react';
+import { FaDownload } from 'react-icons/fa';
 import './AnalysisHistory.css';
 import { UserDataContext } from '../context/userContext';
+import { useDataContext } from '../context/DataContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function AnalysisHistory() {
   const { user } = useContext(UserDataContext);
-  const [fileUploads, setFileUploads] = useState([]); // Excel uploads
-  const [chartRecords, setChartRecords] = useState([]); // Chart records
+  const { uploads, setUploads, charts, setCharts } = useDataContext();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+    const url = `${import.meta.env.VITE_BASE_URL}`;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,36 +21,35 @@ function AnalysisHistory() {
       setError('');
       try {
         const token = localStorage.getItem('token');
-        const [filesRes, chartsRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_BASE_URL}/user/my-uploads`, {
+        if (!uploads) {
+          const filesRes = await axios.get(`${url}/user/my-uploads`, {
             headers: { Authorization: token ? `Bearer ${token}` : undefined },
             withCredentials: true
-          }),
-          axios.get(`${import.meta.env.VITE_BASE_URL}/chart/my-charts`, {
+          });
+          setUploads(filesRes.data || []);
+        }
+        if (!charts) {
+          const chartsRes = await axios.get(`${url}/chart/my-charts`, {
             headers: { Authorization: token ? `Bearer ${token}` : undefined },
             withCredentials: true
-          })
-        ]);
-        setFileUploads(filesRes.data || []);
-        setChartRecords(chartsRes.data || []);
-        
+          });
+          setCharts(chartsRes.data || []);
+        }
       } catch (err) {
         setError('Failed to load history.');
       }
       setLoading(false);
-      
     };
     fetchData();
-  }, []);
+  }, [uploads, charts, setUploads, setCharts]);
 
   // Group charts by file
   const chartsByFile = {};
-  chartRecords.forEach(chart => {
-    // chart.excelRecordId can be an object (populated) or just an id string
+  (charts || []).forEach(chart => {
     const fileId = typeof chart.excelRecordId === 'object' && chart.excelRecordId !== null
       ? chart.excelRecordId._id
       : chart.excelRecordId;
-    if (!fileId) return; // skip if no fileId
+    if (!fileId) return;
     if (!chartsByFile[fileId]) chartsByFile[fileId] = [];
     chartsByFile[fileId].push(chart);
   });
@@ -57,12 +58,12 @@ function AnalysisHistory() {
     if (!window.confirm('Are you sure you want to delete this file and all associated charts?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${import.meta.env.VITE_BASE_URL}/user/delete-upload/${fileId}`, {
+      await axios.delete(`${url}/user/delete-upload/${fileId}`, {
         headers: { Authorization: token ? `Bearer ${token}` : undefined },
         withCredentials: true
       });
-      setFileUploads(prev => prev.filter(f => f._id !== fileId));
-      setChartRecords(prev => prev.filter(c => (c.excelRecordId?._id || c.excelRecordId) !== fileId));
+      setUploads(prev => prev.filter(f => f._id !== fileId));
+      setCharts(prev => prev.filter(c => (c.excelRecordId?._id || c.excelRecordId) !== fileId));
     } catch (err) {
       alert('Failed to delete file.');
     }
@@ -72,11 +73,11 @@ function AnalysisHistory() {
     if (!window.confirm('Are you sure you want to delete this chart?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${import.meta.env.VITE_BASE_URL}/chart/delete/${chartId}`, {
+      await axios.delete(`${url}/chart/delete/${chartId}`, {
         headers: { Authorization: token ? `Bearer ${token}` : undefined },
         withCredentials: true
       });
-      setChartRecords(prev => prev.filter(c => c._id !== chartId));
+      setCharts(prev => prev.filter(c => c._id !== chartId));
     } catch (err) {
       alert('Failed to delete chart.');
     }
@@ -91,8 +92,8 @@ function AnalysisHistory() {
       {loading && <div>Loading...</div>}
       {error && <div style={{ color: 'red' }}>{error}</div>}
       <div className="history-list">
-        {fileUploads.length === 0 && !loading && <div>No uploads found.</div>}
-        {fileUploads.map(file => (
+        {(uploads || []).length === 0 && !loading && <div>No uploads found.</div>}
+        {(uploads || []).map(file => (
           <div key={file._id} className="history-item file-item">
             <div className="item-info">
               <h3>{file.fileName}</h3>
@@ -124,7 +125,6 @@ function AnalysisHistory() {
                     <button
                       className="preview-btn"
                       onClick={() => {
-                       
                         const params = new URLSearchParams({
                           recordId: chart.excelRecordId?._id || chart.excelRecordId,
                           chartType: chart.chartType || '',

@@ -8,6 +8,7 @@ const connectToDb = require('./db/db');
 const userRoutes = require('./routes/user.routes');
 const excelDataRoutes = require('./routes/excelData.routes');
 const chartRecordRoutes = require('./routes/chartRecord.routes');
+const insightsRoutes = require('./routes/insights.routes');
 connectToDb();
 
 app.use(cookieParser());
@@ -16,6 +17,8 @@ app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
 }));
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -27,5 +30,6 @@ app.get('/', (req, res) => {
 app.use('/user',userRoutes);
 app.use('/data', excelDataRoutes);
 app.use('/chart', chartRecordRoutes);
+app.use('/api', insightsRoutes);
 
 module.exports= app;

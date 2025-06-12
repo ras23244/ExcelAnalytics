@@ -2,14 +2,17 @@ import React, { useContext, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { UserDataContext } from '../context/userContext'
+import { useDataContext } from '../context/DataContext';
 
 const Signout = () => {
     const navigate = useNavigate();
     const { setUser } = useContext(UserDataContext);
+    const { clearUploads, clearCharts } = useDataContext();
     const token= localStorage.getItem('token');
+     const url = `${import.meta.env.VITE_BASE_URL}`;
 
     useEffect(() => {
-        axios.post(`${import.meta.env.VITE_BASE_URL}/user/logout`, {}, {
+        axios.post(`${url}/user/logout`, {}, {
             headers:{
                 Authorization:`Bearer ${token}`
             },
@@ -20,11 +23,15 @@ const Signout = () => {
                 localStorage.removeItem('user');
                 
                 setUser({ email: '', name: '', role: '' });
+                clearUploads();
+                clearCharts();
                 navigate('/login')
             }
         }).catch(err=>{
             localStorage.removeItem('token');
             setUser({ email: '', name: '', role: '' });
+            clearUploads();
+            clearCharts();
             navigate('/login');
         });
     }, []);

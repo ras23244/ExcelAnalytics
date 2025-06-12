@@ -117,3 +117,64 @@
   background: var(--secondary-color);
   transform: translateY(-2px);
 }
+
+@media (max-width: 900px) {
+  .analysis-history {
+    padding: 3rem;
+    max-width: 100vw;
+  }
+  .history-header h1 {
+    font-size: 1.5rem;
+  }
+  .history-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  .item-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  .download-btn,
+  .delete-btn,
+  .preview-btn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+  .chart-list {
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .analysis-history {
+    padding: 3rem;
+  }
+  .history-header {
+    margin-bottom: 1rem;
+  }
+  .history-item {
+    padding: 0.7rem;
+    border-radius: 8px;
+  }
+  .item-info h3,
+  .item-info h4 {
+    font-size: 0.95rem;
+  }
+  .item-info p,
+  .item-date,
+  .item-type {
+    font-size: 0.8rem;
+  }
+  .download-btn,
+  .delete-btn,
+  .preview-btn {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+  }
+}

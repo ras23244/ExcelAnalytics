@@ -3,8 +3,9 @@ import { FaFileUpload, FaFile } from 'react-icons/fa';
 import axios from 'axios';
 import './UploadExcel.css';
 import { useNavigate } from 'react-router-dom';
+import { useDataContext } from '../context/DataContext'; // <-- import context
 
-const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
+const url = import.meta.env.VITE_BASE_URL;
 
 function UploadExcel() {
   const [dragActive, setDragActive] = useState(false);
@@ -17,6 +18,7 @@ function UploadExcel() {
 
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
+  const { uploads, setUploads } = useDataContext(); 
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -66,7 +68,7 @@ function UploadExcel() {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      const res = await axios.post(`${VITE_BASE_URL}/data/upload`, formData, {
+      const res = await axios.post(`${url}/data/upload`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -83,6 +85,20 @@ function UploadExcel() {
         } else {
           setPreviewData([{ info: 'File uploaded successfully.' }]);
         }
+       
+        const newUpload = {
+          _id: res.data.recordId,
+          fileName: selectedFile.name,
+          size: selectedFile.size,
+          uploadedAt: new Date().toISOString(),
+          data: res.data.data || [],
+        };
+        if (uploads && Array.isArray(uploads)) {
+          setUploads([newUpload, ...uploads]);
+        } else {
+          setUploads([newUpload]);
+        }
+        // ------------------------------------
       } else {
         setUploadError('Upload failed.');
       }

@@ -7,6 +7,8 @@ function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const url = `${import.meta.env.VITE_BASE_URL}`;
  
 
   useEffect(() => {
@@ -16,7 +18,7 @@ function AdminPanel() {
       try {
         const token = localStorage.getItem('token');
         // Get all users with their files (and optionally stats)
-        const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/user/admin/users-with-files`, {
+        const res = await axios.get(`${url}/user/admin/users-with-files`, {
           headers: { Authorization: token ? `Bearer ${token}` : undefined },
           withCredentials: true
         });
@@ -35,7 +37,7 @@ function AdminPanel() {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${import.meta.env.VITE_BASE_URL}/user/admin/${userId}`, {
+      await axios.delete(`${url}/user/admin/${userId}`, {
         headers: { Authorization: token ? `Bearer ${token}` : undefined },
         withCredentials: true
       });
@@ -50,7 +52,7 @@ function AdminPanel() {
     if (!window.confirm('Are you sure you want to delete this file?')) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${import.meta.env.VITE_BASE_URL}/user/admin/files/${fileId}`, {
+      await axios.delete(`${url}/user/admin/files/${fileId}`, {
         headers: { Authorization: token ? `Bearer ${token}` : undefined },
         withCredentials: true
       });

@@ -3,7 +3,7 @@ import axios from 'axios';
 import './Signup.css';
 import { useNavigate } from 'react-router-dom';
 
-const VITE_BASE_URL = import.meta.env.VITE_BASE_URL;
+const url = import.meta.env.VITE_BASE_URL;
 
 function Signup() {
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ function Signup() {
     setError('');
     setSuccess('');
     try {
-      const res = await axios.post(`${VITE_BASE_URL}/user/register`, form, {
+      const res = await axios.post(`${url}/user/register`, form, {
         headers: { 'Content-Type': 'application/json' },
         withCredentials: true,
       });
@@ -107,6 +107,10 @@ function Signup() {
         </div>
         <button className="signup-btn" type="submit" disabled={loading}>
           {loading ? 'Signing up...' : 'Sign Up'}
+        </button>
+        <div className="mid">Already have account?</div>
+        <button className="signup-btn" type="button" onClick={() => navigate('/login')}>
+          Login
         </button>
       </form>
     </div>
