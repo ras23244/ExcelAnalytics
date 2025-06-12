@@ -3,7 +3,7 @@ import axios from 'axios';
 import './Signup.css';
 import { useNavigate } from 'react-router-dom';
 
-const url = import.meta.env.VITE_BASE_URL;
+const url = "https://excelanalytics-backend.onrender.com";
 
 function Signup() {
   const navigate = useNavigate();
