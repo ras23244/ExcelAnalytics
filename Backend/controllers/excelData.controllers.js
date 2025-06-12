@@ -1,6 +1,4 @@
 const excelDataModel = require("../models/excelData.model");
-const fs = require("fs");
-const path = require("path");
 const xlsx = require("xlsx");
 
 module.exports.uploadExcelData = async (req, res) => {
@@ -9,10 +7,8 @@ module.exports.uploadExcelData = async (req, res) => {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const filePath = path.join(__dirname, "..", "uploads", req.file.filename);
-
-    // Read Excel file
-    const workbook = xlsx.readFile(filePath);
+    // Read Excel file from buffer (memory storage)
+    const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(sheet);
@@ -26,9 +22,6 @@ module.exports.uploadExcelData = async (req, res) => {
 
     await newRecord.save();
 
-    // Delete file after processing
-    fs.unlinkSync(filePath);
-
     res.status(201).json({
       message: "Excel file uploaded and saved to database",
       fileName: req.file.originalname,
@@ -41,7 +34,6 @@ module.exports.uploadExcelData = async (req, res) => {
     res.status(500).json({ error: "Server error while uploading Excel" });
   }
 };
-
 
 module.exports.getExcelDataById = async (req, res) => {
   try {
