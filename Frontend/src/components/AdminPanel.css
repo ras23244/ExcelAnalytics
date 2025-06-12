@@ -305,7 +305,7 @@
 
 @media (max-width: 480px) {
   .admin-panel {
-    padding: 0.5rem 0.25rem;
+    padding: 4rem 0rem 0rem 1rem;
   }
   .admin-header h1 {
     font-size: 1.25rem;
