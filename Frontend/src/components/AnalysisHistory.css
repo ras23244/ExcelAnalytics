@@ -152,7 +152,7 @@
 
 @media (max-width: 600px) {
   .analysis-history {
-    padding: 3rem;
+    padding: 4rem 0rem 0rem 1rem;
   }
   .history-header {
     margin-bottom: 1rem;
