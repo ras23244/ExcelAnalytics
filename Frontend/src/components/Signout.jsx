@@ -9,7 +9,7 @@ const Signout = () => {
     const { setUser } = useContext(UserDataContext);
     const { clearUploads, clearCharts } = useDataContext();
     const token= localStorage.getItem('token');
-     const url = `${import.meta.env.VITE_BASE_URL}`;
+     const url = `https://excelanalytics-backend.onrender.com`;
 
     useEffect(() => {
         axios.post(`${url}/user/logout`, {}, {
