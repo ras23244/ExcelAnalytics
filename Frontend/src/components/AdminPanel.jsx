@@ -8,7 +8,7 @@ function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const url = `${import.meta.env.VITE_BASE_URL}`;
+  const url = `https://excelanalytics-backend.onrender.com`;
  
 
   useEffect(() => {
