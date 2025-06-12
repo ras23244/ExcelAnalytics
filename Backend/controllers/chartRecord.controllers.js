@@ -7,7 +7,7 @@ const path = require('path');
 
 module.exports.createChartRecord = async (req, res) => {
     try {
-        const { excelRecordId, chartType, xAxis, yAxis, chartTitle } = req.body;
+        const { excelRecordId, chartType, xAxis, yAxis,zAxis, chartTitle } = req.body;
 
         // Validate if the Excel record exists
         const excelRecord = await excelDataModel.findById(excelRecordId);
@@ -21,6 +21,7 @@ module.exports.createChartRecord = async (req, res) => {
             chartType: chartType,
             xAxis: xAxis,
             yAxis: yAxis,
+            zAxis: zAxis,
             chartTitle: chartTitle
         });
         await newChartRecord.save();
