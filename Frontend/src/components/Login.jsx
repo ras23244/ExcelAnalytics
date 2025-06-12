@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { UserDataContext } from '../context/userContext';
 import { useDataContext } from '../context/DataContext';
 
-const url = import.meta.env.VITE_BASE_URL;
+const url = "https://excelanalytics-backend.onrender.com";
 
 function Login() {
     const navigate = useNavigate();
