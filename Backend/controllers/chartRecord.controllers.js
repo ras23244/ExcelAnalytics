@@ -45,7 +45,6 @@ module.exports.getChartRecords = async (req, res) => {
             .populate('excelRecordId', 'fileName uploadedAt')
             .sort({ createdAt: -1 });
 
-        console.log("Fetched chart records:", chartRecords);
         
         res.status(200).json(chartRecords);
     } catch (err) {
