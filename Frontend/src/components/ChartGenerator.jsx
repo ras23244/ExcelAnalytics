@@ -6,7 +6,7 @@ import './ChartGenerator.css';
 import axios from 'axios';
 import { useDataContext } from '../context/DataContext';
 
-  const url = `${import.meta.env.VITE_BASE_URL}`;
+  const url = `https://excelanalytics-backend.onrender.com`;
 
 function ChartGenerator() {
   const location = useLocation();
