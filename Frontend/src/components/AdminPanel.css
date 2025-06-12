@@ -236,3 +236,95 @@
 .edit-btn:hover, .delete-btn:hover {
   transform: translateY(-2px);
 }
+/* ...existing styles... */
+
+/* Add or update these styles for better mobile responsiveness */
+
+@media (max-width: 1024px) {
+  .admin-panel {
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+  .admin-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-panel {
+    padding: 1rem 0.5rem;
+  }
+  .admin-header {
+    margin-bottom: 1rem;
+    padding: 0 0.5rem;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .stat-card {
+    flex-direction: row;
+    padding: 1rem;
+    font-size: 0.95rem;
+  }
+  .admin-content {
+    padding: 0.5rem;
+  }
+  .user-section {
+    margin-bottom: 0.75rem;
+  }
+  .user-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  .user-files {
+    padding: 1rem;
+  }
+  .files-list {
+    gap: 0.5rem;
+  }
+  .file-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    padding: 0.5rem;
+  }
+  .user-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  .user-actions {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-panel {
+    padding: 0.5rem 0.25rem;
+  }
+  .admin-header h1 {
+    font-size: 1.25rem;
+  }
+  .admin-header p {
+    font-size: 0.9rem;
+  }
+  .stat-card {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+  .user-info-row {
+    padding: 0.75rem;
+  }
+  .user-files {
+    padding: 0.75rem;
+  }
+  .file-item {
+    padding: 0.25rem;
+    font-size: 0.9rem;
+  }
+}
