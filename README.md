@@ -18,7 +18,7 @@ Registers a new user.
   "name": "John Doe",
   "email": "john.doe@example.com",
   "password": "password123",
-  "role": "user" // optional, defaults to "user"
+  "role": "user" 
 }
 ```
 
@@ -95,7 +95,7 @@ Registers a new user.
   "fileName": "example.xlsx",
   "recordId": "record_id",
   "rowCount": 123,
-  "data": [ /* preview/sample data */ ]
+  "data": 
 }
 ```
 
@@ -111,7 +111,7 @@ Registers a new user.
 ```json
 {
   "fileName": "example.xlsx",
-  "data": [ /* array of row objects */ ],
+  "data": ,
   "uploadedBy": "user_id",
   "uploadedAt": "2024-06-12T..."
 }
@@ -254,5 +254,4 @@ Registers a new user.
 
 ---
 
-## Author
-ExcelAnalytics Team
+
