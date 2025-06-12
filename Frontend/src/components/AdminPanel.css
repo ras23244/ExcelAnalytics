@@ -252,7 +252,7 @@
 
 @media (max-width: 768px) {
   .admin-panel {
-    padding: 1rem 0.5rem;
+    padding:3rem;
   }
   .admin-header {
     margin-bottom: 1rem;
